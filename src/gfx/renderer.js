@@ -184,10 +184,47 @@ export class GameRenderer {
     }
     this.stadium.setTeams(match.teams[0].def, match.teams[1].def);
     this.syncEnds(match);
+    this.buildUmpires();
     this.pPos.fill(-999);
     this.pLife.fill(0);
     this.trailCol.fill(0);
     this.match = match;
+  }
+
+  /** A goal umpire in the traditional white coat and hat stands behind each goal line. */
+  buildUmpires() {
+    if (this.umpires) return;
+    const kit = { base: '#f4f4f0', trim: '#f4f4f0', pattern: 'panel', shorts: '#f4f4f0', socks: '#2a2d34', boots: '#15171c', sleeve: '#f4f4f0', thigh: '#2a2d34', hat: '#f4f4f0', flags: true };
+    this.umpires = [1, -1].map((end, i) => {
+      const p = {
+        idx: 100 + i, number: null, attr: { height: 1.8 }, look: { skin: i ? '#c98f66' : '#f1c9a5', hair: '#4a3222', style: 0 },
+        x: end * (F.GX + 1.7), z: 0, vx: 0, vz: 0, face: end > 0 ? Math.PI : 0,
+        action: null, actionT: 0, actionDur: 0, hasBall: false, charging: false, carryDist: 0, end,
+      };
+      const view = new PlayerView(p, kit, !!this.quality.shadows);
+      this.scene.add(view.root);
+      return { p, view };
+    });
+    this.umpScore = null;
+  }
+
+  updateUmpires(dt, match) {
+    const ls = match.lastScore;
+    const scoring = match.phase === 'goal' || match.phase === 'behind';
+    if (scoring && ls && ls !== this.umpScore) {
+      this.umpScore = ls;
+      const u = this.umpires.find((o) => o.p.end === ls.end);
+      u.p.action = ls.kind === 'goal' ? 'signalGoal' : 'signalBehind';
+      u.p.actionT = 0;
+      u.p.actionDur = ls.kind === 'goal' ? 3.3 : 2.1;
+    }
+    for (const { p, view } of this.umpires) {
+      if (p.action) {
+        p.actionT += dt;
+        if (p.actionT >= p.actionDur) p.action = null;
+      }
+      view.update(dt, this.time, { onMark: false, setShot: false });
+    }
   }
 
   syncEnds(match) {
@@ -328,7 +365,7 @@ export class GameRenderer {
         setShot: !!match.setShot && match.setShot.player === p,
       });
       // don't let bystanders block the view down the barrel
-      v.root.visible = !(this.shotCam && p !== this.ssPlayer && Math.hypot(p.x - this.camPos.x, p.z - this.camPos.z) < 8.5);
+      v.root.visible = !(this.shotCam && p !== this.ssPlayer && Math.hypot(p.x - this.camPos.x, p.z - this.camPos.z) < 9.5);
       const s = realShadows ? 0 : clamp(1.75 - v.cur.yOff * 0.5, 0.9, 1.75);
       d.position.set(p.x, 0.03, p.z);
       d.scale.set(s, 1, s);
@@ -434,6 +471,7 @@ export class GameRenderer {
       this.freeZone.visible = false;
     }
 
+    this.updateUmpires(dt, match);
     this.updateParticles(dt);
     this.stadium.update(dt);
     this.stadium.scoreboard.draw(match);
@@ -468,12 +506,12 @@ export class GameRenderer {
       const l = Math.hypot(dx, dz) || 1;
       dx /= l;
       dz /= l;
-      pos.set(p.x - dx * 8.5 - dz * 2.4, 4.7, p.z - dz * 8.5 + dx * 2.4);
-      look.set(gx, 3.4, 0);
+      pos.set(p.x - dx * 10.5 - dz * 2.6, 5.4, p.z - dz * 10.5 + dx * 2.6);
+      look.set(gx, 2.4, 0);
       if (!match.setShot) {
         // follow the ball a little once it's kicked
         look.x = lerp(gx, b.x, 0.3);
-        look.y = lerp(3.4, b.y, 0.45);
+        look.y = lerp(2.4, b.y, 0.45);
         look.z = lerp(0, b.z, 0.3);
       }
       rate = 3.4;
@@ -489,11 +527,19 @@ export class GameRenderer {
       const D = this.camD || (this.small ? 33 : 38);
       const H = this.camH || (this.small ? 17 : 19.5);
       const lead = clamp(b.state === 'free' ? b.vx * 0.22 : (b.holder ? b.holder.vx : 0) * 0.5, -7, 7);
-      const fx = clamp(bx + lead, -F.A, F.A);
-      const fz = clamp(bz, -F.B, F.B);
+      let fx = clamp(bx + lead, -F.A, F.A);
+      let fz = clamp(bz, -F.B, F.B);
+      let zoom = 1;
+      if (b.state === 'free' && b.kind === 'kick' && b.land && !b.hasBounced) {
+        // pan ahead to where a kick is coming down, easing back so both ends stay in shot
+        const far = Math.hypot(b.land.x - bx, b.land.z - bz);
+        fx = clamp(lerp(bx, b.land.x, 0.58), -F.A, F.A);
+        fz = clamp(lerp(bz, b.land.z, 0.58), -F.B, F.B);
+        zoom = 1 + clamp((far - 16) / 70, 0, 0.42);
+      }
       const high = clamp(this.ball.position.y - 3, 0, 14);
-      pos.set(fx * 0.84, H + high * 0.35, Math.min(fz * 0.92 + D + high * 0.5, F.B + 40));
-      look.set(fx, 1 + high * 0.3, fz * 0.94 - 2);
+      pos.set(fx * 0.84, (H + high * 0.3) * zoom, Math.min(fz * 0.92 + D * zoom + high * 0.4, F.B + 44));
+      look.set(fx, 1 + high * 0.25, fz * 0.94 - 2);
       rate = match.phase === 'bounce' ? 2.5 : 4.2;
     }
 

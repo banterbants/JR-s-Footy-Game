@@ -20,7 +20,7 @@ function write(key, value) {
 
 export const DEFAULT_SETTINGS = {
   sfx: 80, crowd: 70, music: 50, quality: 'auto', shake: 'on', hints: 'on',
-  team: 'DRW', opp: 'NEW', quarterLen: 180, difficulty: 'medium', timeOfDay: 'day',
+  team: 'DRW', opp: 'NEW', quarterLen: 180, difficulty: 'easy', timeOfDay: 'day',
 };
 
 export const store = {

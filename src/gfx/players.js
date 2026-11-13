@@ -66,8 +66,8 @@ function cached(key, make) {
 
 const sharedMat = () => cached('mat:vc', () => new THREE.MeshLambertMaterial({ vertexColors: true }));
 
-function headGeometry(skin, hair, style) {
-  return cached(`head:${skin}:${hair}:${style}`, () => {
+function headGeometry(skin, hair, style, hat) {
+  return cached(`head:${skin}:${hair}:${style}:${hat || ''}`, () => {
     const parts = [
       [new THREE.SphereGeometry(0.15, 12, 9), skin, 0, 0.02, 0],
       [new THREE.CylinderGeometry(0.06, 0.068, 0.12, 6), skin, 0, -0.14, 0],
@@ -81,24 +81,28 @@ function headGeometry(skin, hair, style) {
       cap.rotateZ(0.3);
       parts.push([cap, TX.shade(hair, 0.15), -0.005, 0.022, 0]);
     }
+    if (hat) {
+      parts.push([new THREE.CylinderGeometry(0.27, 0.27, 0.025, 14), hat, 0, 0.1, 0]);
+      parts.push([new THREE.CylinderGeometry(0.15, 0.165, 0.12, 12), hat, 0, 0.16, 0]);
+    }
     return merged(parts);
   });
 }
 
-function limbGeometries(skin, socks, boot) {
-  return cached(`limbs:${skin}:${socks}:${boot}`, () => ({
+function limbGeometries(skin, socks, boot, sleeve = skin, thigh = skin) {
+  return cached(`limbs:${skin}:${socks}:${boot}:${sleeve}:${thigh}`, () => ({
     upperArm: merged([
-      [new THREE.SphereGeometry(0.075, 8, 6), skin, 0, 0, 0],
-      [new THREE.CylinderGeometry(0.064, 0.054, 0.29, 7), skin, 0, -0.145, 0],
+      [new THREE.SphereGeometry(0.075, 8, 6), sleeve, 0, 0, 0],
+      [new THREE.CylinderGeometry(0.064, 0.054, 0.29, 7), sleeve, 0, -0.145, 0],
     ]),
     foreArm: merged([
       [new THREE.CylinderGeometry(0.054, 0.046, 0.27, 7), skin, 0, -0.135, 0],
       [new THREE.SphereGeometry(0.062, 7, 6), skin, 0, -0.29, 0],
     ]),
-    thigh: merged([[new THREE.CylinderGeometry(0.098, 0.074, 0.44, 8), skin, 0, -0.22, 0]]),
+    thigh: merged([[new THREE.CylinderGeometry(0.098, 0.074, 0.44, 8), thigh, 0, -0.22, 0]]),
     shin: merged([
       [new THREE.CylinderGeometry(0.07, 0.056, 0.4, 8), socks, 0, -0.2, 0],
-      [new THREE.SphereGeometry(0.075, 7, 6), skin, 0, 0, 0],
+      [new THREE.SphereGeometry(0.075, 7, 6), thigh, 0, 0, 0],
       [new THREE.BoxGeometry(0.28, 0.11, 0.125), boot, 0.065, -0.44, 0],
     ]),
   }));
@@ -127,7 +131,7 @@ export class PlayerView {
     const s = (p.attr.height / 1.85) * VIS_SCALE;
     this.scale = s;
     const mat = sharedMat();
-    const limbs = limbGeometries(p.look.skin, kit.socks, p.idx % 4 === 0 ? '#f2f2f2' : '#15171c');
+    const limbs = limbGeometries(p.look.skin, kit.socks, kit.boots || (p.idx % 4 === 0 ? '#f2f2f2' : '#15171c'), kit.sleeve, kit.thigh);
 
     this.root = new THREE.Group();
     this.root.scale.setScalar(s);
@@ -145,7 +149,7 @@ export class PlayerView {
     const shorts = new THREE.Mesh(shortsGeo(), cached(`shorts:${kit.shorts}`, () => new THREE.MeshLambertMaterial({ color: kit.shorts })));
     shorts.position.y = -0.02;
     this.body.add(shorts);
-    const head = new THREE.Mesh(headGeometry(p.look.skin, p.look.hair, p.look.style), mat);
+    const head = new THREE.Mesh(headGeometry(p.look.skin, p.look.hair, p.look.style, kit.hat), mat);
     head.position.y = 0.79;
     this.body.add(head);
     this.head = head;
@@ -178,6 +182,27 @@ export class PlayerView {
     [this.legL, this.shinL] = leg(-1);
     [this.legR, this.shinR] = leg(1);
 
+    if (kit.flags) {
+      const fm = cached('mat:flag', () => new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
+      const fg = cached('geo:flag', () => {
+        const g = new THREE.PlaneGeometry(0.5, 0.38);
+        g.translate(0.27, -0.52, 0);
+        return g;
+      });
+      const sg = cached('geo:stick', () => {
+        const g = new THREE.CylinderGeometry(0.012, 0.012, 0.5, 5);
+        g.translate(0, -0.5, 0);
+        return g;
+      });
+      this.flags = [];
+      for (const fore of [this.foreL, this.foreR]) {
+        const f = new THREE.Group();
+        f.add(new THREE.Mesh(fg, fm), new THREE.Mesh(sg, fm));
+        f.visible = false;
+        fore.add(f);
+        this.flags.push(f);
+      }
+    }
     if (castShadow) this.root.traverse((o) => { if (o.isMesh) o.castShadow = true; });
   }
 
@@ -354,6 +379,36 @@ export class PlayerView {
       t.legL = 0.5;
       t.legR = -0.5;
       t.shinR = -0.7;
+    } else if (a === 'signalGoal' || a === 'signalBehind') {
+      // goal umpire: point first (two hands for a goal, one for a behind), then wave the flags
+      const both = a === 'signalGoal';
+      const wave = u > 0.3;
+      const w = Math.sin(time * 10);
+      if (!wave) {
+        rate = 20;
+        t.armRz = 1.45;
+        t.foreR = 0.05;
+        t.armRx = -0.1;
+        if (both) {
+          t.armLz = 1.45;
+          t.foreL = 0.05;
+          t.armLx = 0.1;
+        }
+      } else {
+        rate = 22;
+        t.armRz = 2.3 + w * 0.55;
+        t.armRx = -0.25 - w * 0.5;
+        t.foreR = 0.1;
+        if (both) {
+          t.armLz = 2.3 - w * 0.55;
+          t.armLx = 0.25 - w * 0.5;
+          t.foreL = 0.1;
+        }
+      }
+      if (this.flags) {
+        this.flags[1].visible = wave;
+        this.flags[0].visible = wave && both;
+      }
     } else if (a === 'celebrate') {
       const w = Math.sin(time * 9 + p.idx);
       t.armLz = 2.7 + w * 0.3;
@@ -364,6 +419,11 @@ export class PlayerView {
       t.foreR = 0.25;
       t.yOff = Math.abs(Math.sin(time * 6.5 + p.idx)) * 0.28;
       t.lean = 0.08;
+    }
+
+    if (this.flags && a !== 'signalGoal' && a !== 'signalBehind') {
+      this.flags[0].visible = false;
+      this.flags[1].visible = false;
     }
 
     // ---- ease joints toward the target pose
