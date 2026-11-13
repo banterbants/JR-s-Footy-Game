@@ -273,9 +273,6 @@ export class Match {
     p.ai.decideT = 0.22 + this.rng() * 0.2 + (this.isHumanTeam(p) || this.humanTeam < 0 ? 0 : this.diff.decideAdj);
     p.ai.maxRun = 1.0 + this.rng() * 1.6;
     this.ruck = null;
-    // inside-50 count: possession won inside the attacking arc
-    const dG = dist(p.x, p.z, this.attackGoalX(p), 0);
-    if (dG < F.ARC && this.possTeam !== p.team.idx) p.team.stats.inside50++;
     this.possTeam = p.team.idx;
     if (this.isHumanTeam(p)) this.setControl(p, 0);
     this.emit('possession', { player: p, how });
@@ -877,6 +874,8 @@ export class Match {
   resolveCatches() {
     const b = this.ball;
     if (b.state !== 'free' || b.noCatchT > 0 || b.kind === 'toss' || b.age < 0.12) return;
+    // a kick clears the man on the mark before anyone can get a hand to it
+    if (b.kind === 'kick' && !b.hasBounced && b.age < 0.35) return;
     const ground = b.y < 0.9;
     const group = [];
     let any = false;
@@ -1356,6 +1355,12 @@ export class Match {
     this.stepBall(dt);
 
     if (this.phase === 'play') {
+      // inside-50s: the ball arriving in a team's attacking arc
+      for (const t of this.teams) {
+        const inside = this.possTeam === t.idx && dist(b.x, b.z, t.dir * F.GX, 0) < F.ARC;
+        if (inside && !t.in50) t.stats.inside50++;
+        t.in50 = inside;
+      }
       if (b.state === 'free') {
         if (b.kind === 'toss') {
           if (b.vy < 0 && b.y <= 3.3) this.resolveRuck();

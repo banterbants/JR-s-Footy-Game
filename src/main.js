@@ -37,9 +37,12 @@ class Game {
     this.timers = [];
 
     this.input.bindTouch(document.getElementById('touch'));
-    this.input.onFirstTouch = () => {
-      if (this.state === 'playing' || this.state === 'paused' || this.state === 'break') this.ui.setHud(true, true);
+    this.input.isTouch = isMobile();
+    // swap between on-screen controls and the key legend to suit whatever is being used
+    this.input.onModeChange = () => {
+      if (this.state === 'playing' || this.state === 'paused' || this.state === 'break') this.ui.setHud(true, this.input.isTouch);
     };
+    addEventListener('touchstart', () => this.input.noteTouch(), { passive: true });
     this.createRenderer();
     this.applyAudioSettings();
     this.startDemo();
@@ -562,6 +565,7 @@ class Game {
     const dtMs = now - this.last;
     this.last = now;
     const dt = clamp(dtMs / 1000, 0.001, 0.1);
+    this.adaptQuality(dtMs);
     const m = this.match;
     const r = this.renderer;
     this.input.pollPad();
@@ -608,7 +612,6 @@ class Game {
     if (b.state === 'free' && b.isShot) ex += 0.3;
     if (this.match.phase === 'quarter' || this.match.phase === 'full') ex = 0.15;
     this.audio.update(dt, clamp(ex, 0, 1));
-    this.adaptQuality(dtMs);
   }
 }
 

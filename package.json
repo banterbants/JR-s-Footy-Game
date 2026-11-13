@@ -1,12 +1,11 @@
 {
   "name": "jrs-footy",
   "version": "1.0.0",
-  "description": "JR's Footy - an Aussie rules football game for PC, Mac, Android and iOS",
+  "description": "JR's Footy - a 3D Aussie rules football game for PC, Mac, Android and iOS",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "node tools/serve.mjs",
-    "test": "node tools/sim-test.mjs 8 demo && node tools/sim-test.mjs 8 bot"
-  },
-  "license": "MIT"
+    "test": "node tools/sim-test.mjs 8 demo && node tools/sim-test.mjs 8 bot easy && node tools/sim-test.mjs 8 bot medium && node tools/sim-test.mjs 8 bot hard"
+  }
 }

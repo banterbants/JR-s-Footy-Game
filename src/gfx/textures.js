@@ -128,9 +128,8 @@ export function crowdTexture(homeDef, awayDef, cheer, night, seed = 1) {
         const px = x + dx;
         if (px < -cw || px > W + cw) continue;
         g.fillStyle = col;
-        g.beginPath();
-        g.roundRect(px + 2, y - bodyH, cw - 4, bodyH, 3);
-        g.fill();
+        g.fillRect(px + 2, y - bodyH + 2, cw - 4, bodyH - 2);
+        g.fillRect(px + 4, y - bodyH, cw - 8, 2);
         g.fillStyle = night ? shade(skin, -0.2) : skin;
         g.beginPath();
         g.arc(px + cw / 2, y - bodyH - 4, 4.2, 0, Math.PI * 2);

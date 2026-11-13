@@ -311,6 +311,12 @@ export class GameRenderer {
     const ctrl = match.control;
     const free = match.phase === 'free' ? match.free : null;
 
+    // set shots are watched from behind the kicker, right through the ball's flight
+    if (match.setShot) this.ssPlayer = match.setShot.player;
+    const flying = !!this.ssPlayer && b.state === 'free' && b.isShot && b.kicker === this.ssPlayer && !b.hasBounced && match.phase === 'play';
+    this.shotCam = hud && (!!match.setShot || flying);
+    if (!this.shotCam) this.ssPlayer = null;
+
     // players
     let i = 0;
     const d = this.dummy;
@@ -321,6 +327,8 @@ export class GameRenderer {
         onMark: !!free && p.ai.role === 'onMark',
         setShot: !!match.setShot && match.setShot.player === p,
       });
+      // don't let bystanders block the view down the barrel
+      v.root.visible = !(this.shotCam && p !== this.ssPlayer && Math.hypot(p.x - this.camPos.x, p.z - this.camPos.z) < 8.5);
       const s = realShadows ? 0 : clamp(1.75 - v.cur.yOff * 0.5, 0.9, 1.75);
       d.position.set(p.x, 0.03, p.z);
       d.scale.set(s, 1, s);
@@ -370,7 +378,7 @@ export class GameRenderer {
     // markers
     const live = match.phase === 'play' || match.phase === 'free';
     const pulse = 1 + Math.sin(time * 7) * 0.07;
-    if (ctrl && live && hud) {
+    if (ctrl && live && hud && !this.shotCam) {
       this.controlRing.visible = true;
       this.controlRing.position.set(ctrl.x, 0.05, ctrl.z);
       this.controlRing.scale.setScalar(pulse);
@@ -452,17 +460,23 @@ export class GameRenderer {
       pos.set(Math.cos(a) * 128, 46, Math.sin(a) * 108);
       look.set(bx * 0.35, 2, bz * 0.35);
       rate = 1.5;
-    } else if (match.setShot || (mode === 'setshot' && match.phase === 'free')) {
-      const p = match.setShot ? match.setShot.player : match.free.player;
+    } else if (this.shotCam && this.ssPlayer) {
+      const p = this.ssPlayer;
       const gx = p.team.dir * F.GX;
       let dx = gx - p.x;
       let dz = -p.z;
       const l = Math.hypot(dx, dz) || 1;
       dx /= l;
       dz /= l;
-      pos.set(p.x - dx * 10 - dz * 1.6, 4.6, p.z - dz * 10 + dx * 1.6);
-      look.set(gx, 5, 0);
-      rate = 3.2;
+      pos.set(p.x - dx * 8.5 - dz * 2.4, 4.7, p.z - dz * 8.5 + dx * 2.4);
+      look.set(gx, 3.4, 0);
+      if (!match.setShot) {
+        // follow the ball a little once it's kicked
+        look.x = lerp(gx, b.x, 0.3);
+        look.y = lerp(3.4, b.y, 0.45);
+        look.z = lerp(0, b.z, 0.3);
+      }
+      rate = 3.4;
     } else if (match.phase === 'goal' && match.lastScore && match.lastScore.scorer && match.phaseT < 2.9) {
       const s = match.lastScore.scorer;
       const l = Math.hypot(s.x, s.z) || 1;

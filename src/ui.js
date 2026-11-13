@@ -294,7 +294,7 @@ export class UI {
     const me = s.teamId;
     const ladder = Season.sortedLadder(s);
     const fx = Season.nextFixture(s);
-    const rows = ladder.map((r, i) => `<tr class="${r.id === me ? 'me' : ''}${i === 1 ? ' cut' : ''}"><td>${i + 1}</td><td><span class="dot" style="background:${r.team.c1}"></span>${esc(fullName(r.team))}</td><td>${r.p}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d}</td><td>${r.pct.toFixed(0)}</td><td><b>${r.points}</b></td></tr>`).join('');
+    const rows = ladder.map((r, i) => `<tr class="${r.id === me ? 'me' : ''}${i === 1 ? ' cut' : ''}"><td>${i + 1}</td><td><span class="dot" style="background:linear-gradient(90deg, ${r.team.c1} 55%, ${r.team.c2} 55%)"></span>${esc(fullName(r.team))}</td><td>${r.p}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d}</td><td>${r.pct.toFixed(0)}</td><td><b>${r.points}</b></td></tr>`).join('');
     const res = (r) => {
       const h = teamById(r.home);
       const a = teamById(r.away);
@@ -326,9 +326,9 @@ export class UI {
   scoreline(m) {
     const [a, b] = m.teams;
     return `<div class="scoreline">
-      <div class="t"><span class="chip" style="background:${a.def.c1}"></span><span>${esc(fullName(a.def))}</span></div>
+      <div class="t"><span class="chip" style="background:linear-gradient(${a.def.c1} 55%, ${a.def.c2} 55%)"></span><span>${esc(fullName(a.def))}</span></div>
       <div class="pts"><span class="gb">${a.goals}.${a.behinds}</span>${total(a)} &ndash; ${total(b)}<span class="gb">${b.goals}.${b.behinds}</span></div>
-      <div class="t right"><span>${esc(fullName(b.def))}</span><span class="chip" style="background:${b.def.c1}"></span></div>
+      <div class="t right"><span>${esc(fullName(b.def))}</span><span class="chip" style="background:linear-gradient(${b.def.c1} 55%, ${b.def.c2} 55%)"></span></div>
     </div>`;
   }
 
@@ -489,7 +489,7 @@ export class UI {
     // kick power bar / name tag follow the controlled player
     const showPower = !!c && c.charging && live;
     if (this.tagT > 0) this.tagT -= dt;
-    const showTag = !!c && live && !showPower && this.tagT > 0 && this.tagPlayer === c;
+    const showTag = !!c && live && !showPower && !m.setShot && this.tagT > 0 && this.tagPlayer === c;
     if (c && (showPower || showTag)) {
       renderer.project(c.x, renderer.playerHeadY(c) + 0.9, c.z, this.pt);
       if (showPower) {

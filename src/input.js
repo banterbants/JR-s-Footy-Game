@@ -14,7 +14,7 @@ export class Input {
     this.prev = { a: false, b: false, pause: false };
     this.isTouch = false;
     this.usedPad = false;
-    this.onFirstTouch = null;
+    this.onModeChange = null;
     this.enabled = true;
 
     addEventListener('keydown', (e) => {
@@ -23,6 +23,7 @@ export class Input {
       const typing = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
       if (typing) return;
       if (k !== 'pause' && e.code !== 'Enter') e.preventDefault();
+      if (k === 'up' || k === 'down' || k === 'left' || k === 'right') this.noteKeyboard();
       if (e.code === 'Enter' && e.target && e.target.tagName === 'BUTTON') return;
       if (!this.keys[k] && !e.repeat) {
         if (k === 'a' || k === 'b' || k === 'pause') this.edge[k] = true;
@@ -127,7 +128,14 @@ export class Input {
   noteTouch() {
     if (!this.isTouch) {
       this.isTouch = true;
-      if (this.onFirstTouch) this.onFirstTouch();
+      if (this.onModeChange) this.onModeChange();
+    }
+  }
+
+  noteKeyboard() {
+    if (this.isTouch) {
+      this.isTouch = false;
+      if (this.onModeChange) this.onModeChange();
     }
   }
 

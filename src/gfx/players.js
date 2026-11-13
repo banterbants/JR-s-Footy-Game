@@ -32,7 +32,7 @@ function merged(parts) {
 }
 
 function torsoGeometry() {
-  const g = new THREE.BoxGeometry(0.23, 0.58, 0.42, 1, 2, 1);
+  const g = new THREE.BoxGeometry(0.27, 0.58, 0.46, 1, 2, 1);
   const p = g.attributes.position;
   const uv = g.attributes.uv;
   const n = g.attributes.normal;
@@ -69,17 +69,17 @@ const sharedMat = () => cached('mat:vc', () => new THREE.MeshLambertMaterial({ v
 function headGeometry(skin, hair, style) {
   return cached(`head:${skin}:${hair}:${style}`, () => {
     const parts = [
-      [new THREE.SphereGeometry(0.118, 10, 8), skin, 0, 0, 0],
-      [new THREE.CylinderGeometry(0.05, 0.056, 0.1, 6), skin, 0, -0.13, 0],
+      [new THREE.SphereGeometry(0.15, 12, 9), skin, 0, 0.02, 0],
+      [new THREE.CylinderGeometry(0.06, 0.068, 0.12, 6), skin, 0, -0.14, 0],
     ];
     if (style !== 2) {
-      const cap = new THREE.SphereGeometry(style === 1 ? 0.134 : 0.127, 10, 6, 0, Math.PI * 2, 0, Math.PI * (style === 1 ? 0.62 : 0.5));
+      const cap = new THREE.SphereGeometry(style === 1 ? 0.17 : 0.161, 12, 7, 0, Math.PI * 2, 0, Math.PI * (style === 1 ? 0.62 : 0.5));
       cap.rotateZ(0.32);
-      parts.push([cap, hair, -0.012, 0.008, 0]);
+      parts.push([cap, hair, -0.014, 0.03, 0]);
     } else {
-      const cap = new THREE.SphereGeometry(0.121, 10, 5, 0, Math.PI * 2, 0, Math.PI * 0.42);
+      const cap = new THREE.SphereGeometry(0.154, 12, 6, 0, Math.PI * 2, 0, Math.PI * 0.42);
       cap.rotateZ(0.3);
-      parts.push([cap, TX.shade(hair, 0.15), -0.004, 0.002, 0]);
+      parts.push([cap, TX.shade(hair, 0.15), -0.005, 0.022, 0]);
     }
     return merged(parts);
   });
@@ -88,25 +88,25 @@ function headGeometry(skin, hair, style) {
 function limbGeometries(skin, socks, boot) {
   return cached(`limbs:${skin}:${socks}:${boot}`, () => ({
     upperArm: merged([
-      [new THREE.SphereGeometry(0.062, 7, 5), skin, 0, 0, 0],
-      [new THREE.CylinderGeometry(0.052, 0.045, 0.29, 6), skin, 0, -0.145, 0],
+      [new THREE.SphereGeometry(0.075, 8, 6), skin, 0, 0, 0],
+      [new THREE.CylinderGeometry(0.064, 0.054, 0.29, 7), skin, 0, -0.145, 0],
     ]),
     foreArm: merged([
-      [new THREE.CylinderGeometry(0.045, 0.038, 0.27, 6), skin, 0, -0.135, 0],
-      [new THREE.SphereGeometry(0.05, 6, 5), skin, 0, -0.29, 0],
+      [new THREE.CylinderGeometry(0.054, 0.046, 0.27, 7), skin, 0, -0.135, 0],
+      [new THREE.SphereGeometry(0.062, 7, 6), skin, 0, -0.29, 0],
     ]),
-    thigh: merged([[new THREE.CylinderGeometry(0.084, 0.063, 0.44, 7), skin, 0, -0.22, 0]]),
+    thigh: merged([[new THREE.CylinderGeometry(0.098, 0.074, 0.44, 8), skin, 0, -0.22, 0]]),
     shin: merged([
-      [new THREE.CylinderGeometry(0.06, 0.047, 0.4, 7), socks, 0, -0.2, 0],
-      [new THREE.SphereGeometry(0.064, 6, 5), skin, 0, 0, 0],
-      [new THREE.BoxGeometry(0.26, 0.095, 0.105), boot, 0.06, -0.445, 0],
+      [new THREE.CylinderGeometry(0.07, 0.056, 0.4, 8), socks, 0, -0.2, 0],
+      [new THREE.SphereGeometry(0.075, 7, 6), skin, 0, 0, 0],
+      [new THREE.BoxGeometry(0.28, 0.11, 0.125), boot, 0.065, -0.44, 0],
     ]),
   }));
 }
 
 const torsoGeo = () => cached('torso', torsoGeometry);
 const shortsGeo = () => cached('shorts', () => {
-  const g = new THREE.BoxGeometry(0.25, 0.27, 0.38);
+  const g = new THREE.BoxGeometry(0.29, 0.29, 0.41);
   return g;
 });
 
@@ -146,13 +146,13 @@ export class PlayerView {
     shorts.position.y = -0.02;
     this.body.add(shorts);
     const head = new THREE.Mesh(headGeometry(p.look.skin, p.look.hair, p.look.style), mat);
-    head.position.y = 0.76;
+    head.position.y = 0.79;
     this.body.add(head);
     this.head = head;
 
     const arm = (side) => {
       const sh = new THREE.Group();
-      sh.position.set(0, 0.52, side * 0.255);
+      sh.position.set(0, 0.52, side * 0.285);
       sh.add(new THREE.Mesh(limbs.upperArm, mat));
       const el = new THREE.Group();
       el.position.y = -0.29;
@@ -336,7 +336,7 @@ export class PlayerView {
       rate = 14;
       const up = u > 0.72 ? (u - 0.72) / 0.28 : 0;
       t.pitch = -1.45 * (1 - up);
-      t.yOff = -0.62 * (1 - up);
+      t.yOff = 0.12 * (1 - up);
       t.armLz = 1.9;
       t.armRz = 1.4;
       t.legL = 0.2;
