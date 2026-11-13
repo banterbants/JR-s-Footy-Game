@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>JR's Footy</title>
+  <meta name="description" content="JR's Footy - a fast, fun 3D Aussie rules football game. Play in your browser or install it on PC, Mac, Android and iPhone.">
+  <meta name="theme-color" content="#0b1530">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="JR's Footy">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preload" href="fonts/barlow-condensed-latin-800-italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game" aria-label="JR's Footy game"></canvas>
+
+  <!-- In-match heads-up display -->
+  <div id="hud" class="hidden">
+    <div id="scorebar">
+      <div class="sb-team sb-home">
+        <span class="sb-chip"></span><span class="sb-abbr">HOM</span><span class="sb-gb">0.0</span><span class="sb-total">0</span>
+      </div>
+      <div class="sb-mid"><span class="sb-q">Q1</span><span class="sb-clock">3:00</span></div>
+      <div class="sb-team sb-away">
+        <span class="sb-total">0</span><span class="sb-gb">0.0</span><span class="sb-abbr">AWY</span><span class="sb-chip"></span>
+      </div>
+    </div>
+    <div id="ticker"></div>
+    <canvas id="minimap" width="168" height="134"></canvas>
+    <button id="pauseBtn" class="icon-btn" aria-label="Pause"><span></span><span></span></button>
+    <div id="banner"><div class="banner-main"></div><div class="banner-sub"></div></div>
+    <div id="power"><i></i></div>
+    <div id="nameTag"></div>
+    <div id="stamina"><i></i></div>
+    <div id="prompt"></div>
+    <div id="setshot" class="hidden">
+      <div class="ss-title">SET SHOT <b id="ssDist">40m</b></div>
+      <div class="ss-bar"><div class="ss-zone"></div><div class="ss-needle"></div></div>
+      <div class="ss-hint">Stop the needle in the green</div>
+    </div>
+    <div id="keys"></div>
+  </div>
+
+  <!-- Touch controls -->
+  <div id="touch" class="hidden">
+    <div id="stickZone"><div id="stickBase"><div id="stickKnob"></div></div></div>
+    <button id="btnA" class="tbtn tbtn-a"><b>KICK</b></button>
+    <button id="btnB" class="tbtn tbtn-b"><b>HANDBALL</b></button>
+    <button id="btnS" class="tbtn tbtn-s"><b>SPRINT</b></button>
+  </div>
+
+  <!-- Menus -->
+  <div id="screens">
+    <section id="title" class="screen">
+      <div class="title-wrap">
+        <div class="logo">
+          <svg class="logo-ball" viewBox="0 0 120 80" aria-hidden="true">
+            <ellipse cx="60" cy="40" rx="56" ry="34" fill="#b02a18" stroke="#fff" stroke-width="4"/>
+            <path d="M8 40 Q60 22 112 40" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="3"/>
+            <path d="M44 40h32M48 33v14M56 32v16M64 32v16M72 33v14" stroke="#f3ead8" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+          <div class="logo-text"><span class="logo-jr">JR'S</span><span class="logo-footy">FOOTY</span></div>
+        </div>
+        <div class="tagline">SOUTHERN CROSS LEAGUE</div>
+        <nav class="menu">
+          <button class="btn btn-primary" data-act="play">Play Match</button>
+          <button class="btn" data-act="season">Season</button>
+          <button class="btn" data-act="howto">How to Play</button>
+          <button class="btn" data-act="settings">Settings</button>
+          <button class="btn btn-install hidden" data-act="install">Install App</button>
+        </nav>
+        <div id="record" class="record"></div>
+      </div>
+    </section>
+
+    <section id="setup" class="screen hidden">
+      <div class="panel wide">
+        <h2>Match Day</h2>
+        <div class="versus">
+          <div class="pick" data-side="home">
+            <div class="pick-label">YOUR CLUB</div>
+            <div class="pick-row">
+              <button class="arrow" data-dir="-1" aria-label="Previous club">&#9664;</button>
+              <canvas class="kit" width="150" height="170"></canvas>
+              <button class="arrow" data-dir="1" aria-label="Next club">&#9654;</button>
+            </div>
+            <div class="pick-name"></div>
+            <div class="pick-rating"></div>
+          </div>
+          <div class="vs">V</div>
+          <div class="pick" data-side="away">
+            <div class="pick-label">OPPONENT</div>
+            <div class="pick-row">
+              <button class="arrow" data-dir="-1" aria-label="Previous club">&#9664;</button>
+              <canvas class="kit" width="150" height="170"></canvas>
+              <button class="arrow" data-dir="1" aria-label="Next club">&#9654;</button>
+            </div>
+            <div class="pick-name"></div>
+            <div class="pick-rating"></div>
+          </div>
+        </div>
+        <div class="options">
+          <div class="opt"><label>Quarters</label><div class="seg" data-opt="quarterLen"></div></div>
+          <div class="opt"><label>Difficulty</label><div class="seg" data-opt="difficulty"></div></div>
+          <div class="opt"><label>Time</label><div class="seg" data-opt="timeOfDay"></div></div>
+        </div>
+        <div class="row">
+          <button class="btn btn-ghost" data-act="back">Back</button>
+          <button class="btn btn-primary" data-act="start">Bounce Down!</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="season" class="screen hidden">
+      <div class="panel wide">
+        <h2 id="seasonTitle">Season</h2>
+        <div id="seasonBody"></div>
+        <div class="row">
+          <button class="btn btn-ghost" data-act="back">Back</button>
+          <button class="btn btn-ghost" data-act="season-reset">New Season</button>
+          <button class="btn btn-primary" data-act="season-play">Play Next Match</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="howto" class="screen hidden">
+      <div class="panel wide">
+        <h2>How to Play</h2>
+        <div class="howto-grid">
+          <div>
+            <h3>Controls</h3>
+            <table class="controls">
+              <thead><tr><th></th><th>Keyboard</th><th>Touch</th><th>Gamepad</th></tr></thead>
+              <tbody>
+                <tr><td>Move</td><td><kbd>W A S D</kbd> / arrows</td><td>Left thumb</td><td>Left stick</td></tr>
+                <tr><td>Kick &middot; Mark &middot; Tackle</td><td><kbd>Space</kbd> / <kbd>J</kbd></td><td>Big button</td><td><kbd>A</kbd></td></tr>
+                <tr><td>Handball &middot; Switch player</td><td><kbd>E</kbd> / <kbd>K</kbd></td><td>Second button</td><td><kbd>B</kbd> / <kbd>X</kbd></td></tr>
+                <tr><td>Sprint</td><td><kbd>Shift</kbd> / <kbd>L</kbd></td><td>Small button</td><td><kbd>RT</kbd></td></tr>
+                <tr><td>Pause</td><td><kbd>Esc</kbd> / <kbd>P</kbd></td><td>&#10074;&#10074;</td><td><kbd>Start</kbd></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3>The game</h3>
+            <ul class="rules">
+              <li><b>Goal = 6 points</b> &mdash; kick it between the two tall posts. <b>Behind = 1</b> &mdash; either side of them.</li>
+              <li><b>Hold KICK</b> to power up, aim with the stick, <b>release</b> to kick. The ring shows who you'll hit.</li>
+              <li><b>Mark it!</b> Catch a kick of 15&nbsp;m or more and you get a free kick. Run to the white ring and press <b>MARK</b> to fly.</li>
+              <li><b>Set shots:</b> mark inside range and you can line up for goal &mdash; stop the needle in the green.</li>
+              <li><b>Don't get caught!</b> Hang on too long and a tackle is <b>holding the ball</b>. Handball out of trouble.</li>
+              <li>On defence, press <b>TACKLE</b> next to the ball carrier, and <b>SWITCH</b> to your closest player.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="row"><button class="btn btn-primary" data-act="back">Got it</button></div>
+      </div>
+    </section>
+
+    <section id="settings" class="screen hidden">
+      <div class="panel">
+        <h2>Settings</h2>
+        <div class="options col">
+          <div class="opt"><label>Sound effects</label><input type="range" min="0" max="100" data-set="sfx"></div>
+          <div class="opt"><label>Crowd</label><input type="range" min="0" max="100" data-set="crowd"></div>
+          <div class="opt"><label>Music</label><input type="range" min="0" max="100" data-set="music"></div>
+          <div class="opt"><label>Graphics</label><div class="seg" data-opt="quality"></div></div>
+          <div class="opt"><label>Screen shake</label><div class="seg" data-opt="shake"></div></div>
+          <div class="opt"><label>Hints</label><div class="seg" data-opt="hints"></div></div>
+        </div>
+        <div class="row"><button class="btn btn-primary" data-act="back">Done</button></div>
+      </div>
+    </section>
+
+    <section id="install" class="screen hidden">
+      <div class="panel">
+        <h2>Install JR's Footy</h2>
+        <div id="installBody" class="install-body"></div>
+        <div class="row">
+          <button class="btn btn-ghost" data-act="back">Back</button>
+          <button class="btn btn-primary hidden" id="installNow" data-act="install-now">Install Now</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="pause" class="screen hidden">
+      <div class="panel narrow">
+        <h2>Paused</h2>
+        <nav class="menu">
+          <button class="btn btn-primary" data-act="resume">Resume</button>
+          <button class="btn" data-act="howto">How to Play</button>
+          <button class="btn" data-act="settings">Settings</button>
+          <button class="btn" data-act="quit">Quit Match</button>
+        </nav>
+      </div>
+    </section>
+
+    <section id="quarter" class="screen hidden">
+      <div class="panel wide">
+        <h2 id="qTitle">Quarter Time</h2>
+        <div id="qBody"></div>
+        <div class="row"><button class="btn btn-primary" data-act="next-quarter">Continue</button></div>
+      </div>
+    </section>
+
+    <section id="fulltime" class="screen hidden">
+      <div class="panel wide">
+        <div id="ftResult" class="ft-result">FULL TIME</div>
+        <div id="ftBody"></div>
+        <div class="row">
+          <button class="btn btn-ghost" data-act="quit">Main Menu</button>
+          <button class="btn btn-primary" data-act="again">Play Again</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="fade"></div>
+  <div id="rotate"><div class="rotate-icon"></div><p>Turn your phone sideways to play</p></div>
+  <div id="loading"><div class="spinner"></div><p>Warming up&hellip;</p></div>
+  <noscript><p style="color:#fff;padding:2rem;font-family:sans-serif">JR's Footy needs JavaScript to run.</p></noscript>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
