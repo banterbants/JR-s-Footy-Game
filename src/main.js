@@ -16,6 +16,14 @@ const QUALITY = {
 };
 const isMobile = () => matchMedia('(pointer: coarse)').matches || /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
 const isStandalone = () => matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true;
+// inside another page's frame (a preview or an embed) the app can't be installed
+const isEmbedded = () => {
+  try {
+    return window.self !== window.top;
+  } catch (_) {
+    return true;
+  }
+};
 const fullName = (t) => `${t.city} ${t.nick}`;
 
 class Game {
@@ -47,7 +55,7 @@ class Game {
     this.applyAudioSettings();
     this.startDemo();
     this.ui.show('title');
-    this.ui.setInstallAvailable(!isStandalone());
+    this.ui.setInstallAvailable(!isStandalone() && !isEmbedded());
     this.ui.setKeysLegend('keys');
 
     addEventListener('resize', () => this.renderer.resize());
@@ -70,13 +78,13 @@ class Game {
     addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.installEvent = e;
-      this.ui.setInstallAvailable(true);
+      this.ui.setInstallAvailable(!isEmbedded());
     });
     addEventListener('appinstalled', () => {
       this.installEvent = null;
       this.ui.setInstallAvailable(false);
     });
-    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    if ('serviceWorker' in navigator && !isEmbedded() && (location.protocol === 'https:' || location.hostname === 'localhost')) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
     this.frame = this.frame.bind(this);
