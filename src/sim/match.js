@@ -727,7 +727,8 @@ export class Match {
     }
     t.stats.tackles++;
     t.team.stats.tackles++;
-    const holding = c.possT > PRIOR_OPP;
+    // newcomers get longer to get rid of it before it's "holding the ball"
+    const holding = c.possT > (this.isHumanTeam(c) ? this.diff.priorOpp : PRIOR_OPP);
     c.action = 'down';
     c.actionT = 0;
     c.actionDur = holding ? 1.1 : 0.75;
@@ -1367,6 +1368,12 @@ export class Match {
         } else {
           this.resolveCatches();
         }
+      }
+      // if nobody can get clean hands on it, the umpire calls for a ball-up
+      this.looseT = b.state === 'free' && b.kind !== 'toss' ? (this.looseT || 0) + dt : 0;
+      if (this.looseT > 9 && this.phase === 'play' && !this.sirenGone) {
+        this.looseT = 0;
+        this.startBallUp(b.x, b.z);
       }
     }
   }

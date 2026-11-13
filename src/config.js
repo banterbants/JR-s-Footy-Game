@@ -68,9 +68,9 @@ export function teamById(id) {
 }
 
 export const DIFFICULTY = {
-  easy: { label: 'Rookie', aiSpeed: 0.92, tackleAdj: -0.16, tackleDelay: 0.3, decideAdj: 0.3, aiSpread: 1.45, humanMark: 0.14, humanSpread: 0.75 },
-  medium: { label: 'Pro', aiSpeed: 0.98, tackleAdj: -0.04, tackleDelay: 0.16, decideAdj: 0.08, aiSpread: 1.1, humanMark: 0.06, humanSpread: 0.9 },
-  hard: { label: 'Legend', aiSpeed: 1.03, tackleAdj: 0.06, tackleDelay: 0.06, decideAdj: -0.05, aiSpread: 0.88, humanMark: 0.0, humanSpread: 1.0 },
+  easy: { label: 'Rookie', aiSpeed: 0.92, tackleAdj: -0.16, tackleDelay: 0.3, decideAdj: 0.3, aiSpread: 1.45, humanMark: 0.14, humanSpread: 0.75, priorOpp: 2.6 },
+  medium: { label: 'Pro', aiSpeed: 0.98, tackleAdj: -0.04, tackleDelay: 0.16, decideAdj: 0.08, aiSpread: 1.1, humanMark: 0.06, humanSpread: 0.9, priorOpp: 1.9 },
+  hard: { label: 'Legend', aiSpeed: 1.03, tackleAdj: 0.06, tackleDelay: 0.06, decideAdj: -0.05, aiSpread: 0.88, humanMark: 0.0, humanSpread: 1.0, priorOpp: 1.4 },
 };
 
 export const SURNAMES = [

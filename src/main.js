@@ -186,7 +186,7 @@ class Game {
       this.renderer.camMode = 'broadcast';
       this.renderer.cut();
       this.ui.hideScreens();
-      this.ui.initMatch(this.match);
+      this.ui.initMatch(this.match, this.renderer.kits);
       this.ui.setHud(true, this.input.isTouch);
       this.ui.setKeysLegend(this.input.usedPad ? 'pad' : 'keys');
       this.input.clear();

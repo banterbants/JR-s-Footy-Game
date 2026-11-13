@@ -87,6 +87,8 @@ function assignRoles(m, team) {
           p.ai.role = 'support';
           p.ai.slot = slots++;
         }
+        // give the man with the free kick some room
+        if (phase === 'free' && d < 6.5) p.ai.role = 'away';
       }
     } else if (phase === 'free') {
       const f = m.free;

@@ -405,7 +405,7 @@ export class UI {
     else this.el.keys.innerHTML = '<span><b>SPACE</b> Kick &middot; Mark &middot; Tackle</span><span><b>E</b> Handball &middot; Switch</span><span><b>SHIFT</b> Sprint</span>';
   }
 
-  initMatch(m) {
+  initMatch(m, kits) {
     const [a, b] = m.teams;
     const sb = this.el.sb;
     sb.hChip.style.background = `linear-gradient(${a.def.c1} 50%, ${a.def.c2} 50%)`;
@@ -413,8 +413,9 @@ export class UI {
     sb.hAbbr.textContent = a.def.id;
     sb.aAbbr.textContent = b.def.id;
     this.cache = {};
-    this.mapCols = [a.def.c1, b.def.c1];
-    this.mapEdge = [a.def.c2, b.def.c2];
+    // minimap dots match what each side is actually wearing
+    this.mapCols = kits ? [kits[0].base, kits[1].base] : [a.def.c1, b.def.c1];
+    this.mapEdge = kits ? [kits[0].trim, kits[1].trim] : [a.def.c2, b.def.c2];
   }
 
   fade(on) {
