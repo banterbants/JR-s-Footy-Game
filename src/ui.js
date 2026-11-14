@@ -1,5 +1,5 @@
 // DOM user interface: menus, the in-match HUD, minimap and summary screens.
-import { TEAMS, teamById, F } from './config.js';
+import { TEAMS, teamById, F, VERSION } from './config.js';
 import { fmtClock } from './util.js';
 import { store } from './store.js';
 import { paintGuernsey } from './gfx/textures.js';
@@ -34,6 +34,8 @@ export class UI {
     this.tagT = 0;
     this.tagPlayer = null;
     this.pt = { x: 0, y: 0, visible: false };
+    this.navActive = false;
+    this.padEl = null;
     this.el = {
       hud: $('#hud'), touch: $('#touch'), fade: $('#fade'), banner: $('#banner'), bannerMain: $('.banner-main'), bannerSub: $('.banner-sub'),
       ticker: $('#ticker'), prompt: $('#prompt'), power: $('#power'), powerFill: $('#power i'), tag: $('#nameTag'),
@@ -47,11 +49,16 @@ export class UI {
     this.bind();
     this.refreshSetup();
     this.refreshRecord();
+    $('#version').textContent = `v${VERSION}`;
   }
 
   // ----------------------------------------------------------------- menus
 
   bind() {
+    document.addEventListener('pointerdown', () => {
+      this.navActive = false;
+      this.setPadFocus(null);
+    });
     document.addEventListener('click', (e) => {
       const b = e.target.closest('button');
       if (!b) return;
@@ -106,8 +113,20 @@ export class UI {
           g.startQuickMatch();
         }
         break;
-      case 'season-play':
-        g.startSeasonMatch();
+      case 'season-play': {
+        const fx = store.season && Season.nextFixture(store.season);
+        if (fx && fx.bye) {
+          // week off: the other clubs play, then it's on to the next round
+          Season.recordResult(store.season, null);
+          store.saveSeason();
+          this.showSeason();
+        } else {
+          g.startSeasonMatch();
+        }
+        break;
+      }
+      case 'reload':
+        location.reload();
         break;
       case 'season-reset':
         store.season = null;
@@ -151,8 +170,12 @@ export class UI {
     for (const s of $$('.screen')) s.classList.toggle('hidden', s.id !== id);
     if (push && this.current && this.current !== id) this.stack.push(this.current);
     this.current = id;
-    const first = $(`#${id} .btn-primary`);
-    if (first && !this.game.input.isTouch) first.focus({ preventScroll: true });
+    const first = $(`#${id} .btn-primary:not(.hidden)`) || this.focusables()[0];
+    if (this.navActive) this.setPadFocus(first);
+    else {
+      this.setPadFocus(null);
+      if (first && !this.game.input.isTouch) first.focus({ preventScroll: true });
+    }
   }
 
   back() {
@@ -164,13 +187,100 @@ export class UI {
     for (const s of $$('.screen')) s.classList.add('hidden');
     this.current = null;
     this.stack = [];
+    this.setPadFocus(null);
   }
 
-  /** Press the main button of whichever screen is showing (for gamepads). */
-  confirm() {
+  // ------------------------------------------- controller / keyboard menus
+
+  /** Everything on the current screen that can be selected. */
+  focusables() {
+    if (!this.current) return [];
+    return $$('button, input[type=range]', $(`#${this.current}`)).filter((el) => el.offsetParent !== null && !el.disabled);
+  }
+
+  setPadFocus(el) {
+    if (this.padEl && this.padEl !== el) this.padEl.classList.remove('pad-focus');
+    this.padEl = el || null;
+    if (el) {
+      el.classList.add('pad-focus');
+      el.focus({ preventScroll: true });
+      if (el.scrollIntoView) el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+  }
+
+  /** The highlighted control, if it is still on screen. */
+  currentPadEl() {
+    const el = this.padEl;
+    return el && el.isConnected && el.offsetParent !== null && el.closest('.screen') && el.closest('.screen').id === this.current ? el : null;
+  }
+
+  /** Move the highlight with the stick, d-pad or arrow keys. */
+  nav(dir) {
+    const els = this.focusables();
+    if (!els.length) return;
+    const cur = this.currentPadEl();
+    const wasActive = this.navActive;
+    this.navActive = true;
+    if (!cur || !wasActive) {
+      this.setPadFocus(cur || $(`#${this.current} .btn-primary:not(.hidden)`) || els[0]);
+      return;
+    }
+    const horizontal = dir === 'left' || dir === 'right';
+    if (cur.type === 'range' && horizontal) {
+      const v = Math.max(Number(cur.min), Math.min(Number(cur.max), Number(cur.value) + (dir === 'right' ? 5 : -5)));
+      cur.value = v;
+      cur.dispatchEvent(new Event('input', { bubbles: true }));
+      return;
+    }
+    const r = cur.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    let best = null;
+    let bestScore = Infinity;
+    for (const el of els) {
+      if (el === cur) continue;
+      const q = el.getBoundingClientRect();
+      const dx = q.left + q.width / 2 - cx;
+      const dy = q.top + q.height / 2 - cy;
+      const main = dir === 'left' ? -dx : dir === 'right' ? dx : dir === 'up' ? -dy : dy;
+      if (main < 6) continue;
+      // controls lined up with the current one are strongly preferred
+      const lined = horizontal ? q.bottom > r.top + 2 && q.top < r.bottom - 2 : q.right > r.left + 2 && q.left < r.right - 2;
+      const cross = horizontal ? Math.abs(dy) : Math.abs(dx);
+      const score = main + cross * (lined ? 0.25 : 2.5);
+      if (score < bestScore) {
+        bestScore = score;
+        best = el;
+      }
+    }
+    if (best) {
+      this.setPadFocus(best);
+      this.game.audio.blip(dir === 'down' || dir === 'right');
+    }
+  }
+
+  /** A / Space: press the highlighted control. Start (or nothing highlighted): the screen's main button. */
+  confirm(primaryOnly = false) {
     if (!this.current) return;
-    const b = $(`#${this.current} .btn-primary`);
-    if (b) b.click();
+    const wasActive = this.navActive;
+    this.navActive = true;
+    const el = (!primaryOnly && wasActive && this.currentPadEl()) || $(`#${this.current} .btn-primary:not(.hidden)`);
+    if (!el || el.type === 'range') return;
+    el.click();
+    // stay on controls that don't change screen (team arrows, option switches)
+    if (this.current && el.isConnected && el.offsetParent !== null && !this.currentPadEl()) this.setPadFocus(el);
+  }
+
+  /** B / Esc: go back. */
+  cancel() {
+    if (!this.current) return;
+    this.navActive = true;
+    if (this.current === 'pause') {
+      this.game.resume();
+      return;
+    }
+    const back = $(`#${this.current} [data-act=back]`);
+    if (back && back.offsetParent !== null) back.click();
   }
 
   buildOptions() {
@@ -264,6 +374,11 @@ export class UI {
     $('.btn-install').classList.toggle('hidden', !on);
   }
 
+  /** Show the "new version downloaded" button on the title screen. */
+  setUpdateReady(on) {
+    $('.btn-update').classList.toggle('hidden', !on);
+  }
+
   showInstall() {
     const g = this.game;
     const ua = navigator.userAgent;
@@ -308,6 +423,9 @@ export class UI {
       side += `<span class="tag">PREMIERS</span><div class="next" style="color:var(--gold)">${esc(fullName(p))}</div>`;
       side += s.premier === me ? '<p>You did it. The cup is yours!</p>' : '<p>Not this year. There\'s always next season.</p>';
       if (s.finalResult) side += `<div class="tag" style="margin-top:8px">GRAND FINAL</div>${res(s.finalResult)}`;
+    } else if (fx && fx.bye) {
+      side += `<span class="tag">${fx.label.toUpperCase()}</span><div class="next">Bye week</div>`;
+      side += '<p class="res">Feet up. The other clubs play this round.</p>';
     } else if (fx) {
       const h = teamById(fx.home);
       const a = teamById(fx.away);
@@ -315,9 +433,12 @@ export class UI {
       side += `<p class="res">${fx.final ? 'Winner takes the cup.' : fx.home === me ? 'Home game' : 'Away game'}</p>`;
     }
     if (s.last && s.last.length && !s.premier) side += `<div class="tag" style="margin-top:8px">LAST ROUND</div>${s.last.map(res).join('')}`;
-    $('#seasonTitle').textContent = s.premier ? 'Season Complete' : `Season – ${s.round >= Season.ROUNDS ? 'Grand Final' : `Round ${s.round + 1} of ${Season.ROUNDS}`}`;
+    const total = Season.rounds(s);
+    $('#seasonTitle').textContent = s.premier ? 'Season Complete' : `Season – ${s.round >= total ? 'Grand Final' : `Round ${s.round + 1} of ${total}`}`;
     $('#seasonBody').innerHTML = `<div class="two-col"><table class="ladder"><thead><tr><th></th><th>CLUB</th><th>P</th><th>W</th><th>L</th><th>D</th><th>%</th><th>PTS</th></tr></thead><tbody>${rows}</tbody></table><div class="fixture">${side}</div></div>`;
-    $('#season [data-act=season-play]').classList.toggle('hidden', !fx);
+    const play = $('#season [data-act=season-play]');
+    play.classList.toggle('hidden', !fx);
+    play.textContent = fx && fx.bye ? 'Continue' : 'Play Next Match';
     this.show('season');
   }
 

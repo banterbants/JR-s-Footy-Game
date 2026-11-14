@@ -43,6 +43,7 @@ class Game {
     this.slowT = 0;
     this.last = performance.now();
     this.timers = [];
+    this.userActed = false;
 
     this.input.bindTouch(document.getElementById('touch'));
     this.input.isTouch = isMobile();
@@ -61,6 +62,7 @@ class Game {
     addEventListener('resize', () => this.renderer.resize());
     addEventListener('orientationchange', () => setTimeout(() => this.renderer.resize(), 250));
     const unlock = () => {
+      this.userActed = true;
       this.audio.unlock();
       if (this.state === 'menu') this.audio.startMusic();
     };
@@ -86,6 +88,9 @@ class Game {
     });
     if ('serviceWorker' in navigator && !isEmbedded() && (location.protocol === 'https:' || location.hostname === 'localhost')) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
+      navigator.serviceWorker.addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'update-ready') this.onUpdateReady();
+      });
     }
     this.frame = this.frame.bind(this);
     requestAnimationFrame(this.frame);
@@ -296,6 +301,30 @@ class Game {
       this.ui.hideScreens();
       this.startMatch(this.lastConfig);
     }
+  }
+
+  /**
+   * The service worker has downloaded a newer version in the background.
+   * If the player is still sitting on the title screen, swap to it straight
+   * away; otherwise offer a button (the next launch gets it regardless).
+   */
+  onUpdateReady() {
+    let already = false;
+    try {
+      already = sessionStorage.getItem('jrfooty.updated') === '1';
+    } catch (_) {
+      /* storage unavailable */
+    }
+    if (this.state === 'menu' && !this.userActed && !already) {
+      try {
+        sessionStorage.setItem('jrfooty.updated', '1');
+      } catch (_) {
+        /* ignore */
+      }
+      location.reload();
+      return;
+    }
+    this.ui.setUpdateReady(true);
   }
 
   promptInstall() {
@@ -568,6 +597,23 @@ class Game {
     }
   }
 
+  /** Drive the menus from a controller or the keyboard: move, select, back. */
+  menuInput(now, pauseIsBack) {
+    const dir = this.input.takeNav(now);
+    const start = this.input.takeStart();
+    const esc = this.input.takePause() && !start;
+    const ok = this.input.takeConfirm();
+    const back = this.input.takeBack() || (pauseIsBack && esc);
+    if (dir || ok || back || start) {
+      this.userActed = true;
+      this.audio.unlock();
+    }
+    if (dir) this.ui.nav(dir);
+    if (start && this.state !== 'paused') this.ui.confirm(true); // Start always means "go"
+    else if (ok) this.ui.confirm();
+    else if (back) this.ui.cancel();
+  }
+
   frame(now) {
     requestAnimationFrame(this.frame);
     const dtMs = now - this.last;
@@ -596,17 +642,18 @@ class Game {
     } else if (this.state === 'break') {
       m.step(Math.min(dt, 1 / 30), null);
       this.drain(this.onEvent);
-      if (this.input.takeConfirm()) this.ui.confirm();
+      this.menuInput(now, false);
     } else if (this.state === 'menu') {
       m.step(Math.min(dt, 1 / 30), null);
       this.drain(this.onDemoEvent);
       if (m.phase === 'quarter') m.nextQuarter();
       else if (m.phase === 'full') this.startDemo();
-      if (this.input.usedPad && this.input.takeConfirm()) this.ui.confirm();
-      else this.input.clear();
+      this.menuInput(now, true);
     } else if (this.state === 'paused') {
       if (this.input.takePause()) this.resume();
-      else if (this.input.usedPad && this.input.takeConfirm()) this.ui.confirm();
+      else this.menuInput(now, false);
+    } else {
+      this.input.clear();
     }
 
     const inMatch = this.state === 'playing' || this.state === 'break';

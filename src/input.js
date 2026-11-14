@@ -10,17 +10,19 @@ export class Input {
     this.keys = {};
     this.touch = { sx: 0, sy: 0, a: false, b: false, sprint: false, stickId: null, ox: 0, oy: 0 };
     this.pad = { sx: 0, sy: 0, a: false, b: false, sprint: false, pause: false };
-    this.edge = { a: false, b: false, pause: false };
+    this.edge = { a: false, b: false, pause: false, start: false };
     this.prev = { a: false, b: false, pause: false };
     this.isTouch = false;
     this.usedPad = false;
+    this.navState = { dir: null, next: 0 };
     this.onModeChange = null;
     this.enabled = true;
 
     addEventListener('keydown', (e) => {
       const k = KEY_MAP[e.code];
       if (!k) return;
-      const typing = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+      const t = e.target;
+      const typing = t && (t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && t.type !== 'range'));
       if (typing) return;
       if (k !== 'pause' && e.code !== 'Enter') e.preventDefault();
       if (k === 'up' || k === 'down' || k === 'left' || k === 'right') this.noteKeyboard();
@@ -163,6 +165,7 @@ export class Input {
       p.pause = p.pause || bt(9);
       if (p.a || p.b || p.sx || p.sy) this.usedPad = true;
     }
+    if (p.pause && !this.prev.pause) this.edge.start = true;
     for (const k of ['a', 'b', 'pause']) {
       if (p[k] && !this.prev[k]) this.edge[k] = true;
       this.prev[k] = p[k];
@@ -171,7 +174,14 @@ export class Input {
 
   /** Forget any button presses that haven't been used yet. */
   clear() {
-    this.edge.a = this.edge.b = this.edge.pause = false;
+    this.edge.a = this.edge.b = this.edge.pause = this.edge.start = false;
+  }
+
+  /** The controller's Start button (which doubles as "select" in menus). */
+  takeStart() {
+    const v = this.edge.start;
+    this.edge.start = false;
+    return v;
   }
 
   /** True once per press of the pause key/button. */
@@ -181,12 +191,49 @@ export class Input {
     return v;
   }
 
-  /** Any "confirm" press, for menus driven by a gamepad. */
+  /** A / Space: "select" in menus. */
   takeConfirm() {
     const v = this.edge.a;
     this.edge.a = false;
+    return v;
+  }
+
+  /** B / E: "back" in menus. */
+  takeBack() {
+    const v = this.edge.b;
     this.edge.b = false;
     return v;
+  }
+
+  /**
+   * Direction presses for menus from the stick, d-pad or arrow keys.
+   * Returns 'up' | 'down' | 'left' | 'right' once per press, repeating while held.
+   */
+  takeNav(now) {
+    const k = this.keys;
+    const p = this.pad;
+    const sx = (Math.abs(p.sx) > 0.55 ? Math.sign(p.sx) : 0) || (k.right ? 1 : 0) - (k.left ? 1 : 0);
+    const sy = (Math.abs(p.sy) > 0.55 ? Math.sign(p.sy) : 0) || (k.down ? 1 : 0) - (k.up ? 1 : 0);
+    let dir = null;
+    if (sy < 0) dir = 'up';
+    else if (sy > 0) dir = 'down';
+    else if (sx < 0) dir = 'left';
+    else if (sx > 0) dir = 'right';
+    const n = this.navState;
+    if (!dir) {
+      n.dir = null;
+      return null;
+    }
+    if (dir !== n.dir) {
+      n.dir = dir;
+      n.next = now + 380;
+      return dir;
+    }
+    if (now >= n.next) {
+      n.next = now + 130;
+      return dir;
+    }
+    return null;
   }
 
   /**

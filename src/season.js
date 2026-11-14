@@ -1,16 +1,16 @@
-// A short home-and-away season: seven rounds, then the top two play off in the Grand Final.
+// A home-and-away season: every club plays every other once (with a bye week
+// when there's an odd number of clubs), then the top two meet in the Grand Final.
 import { TEAMS, teamById } from './config.js';
 
-export const ROUNDS = TEAMS.length - 1;
-
-/** Round-robin draw (circle method). */
-function makeFixtures() {
-  const ids = TEAMS.map((t) => t.id);
+/** Round-robin draw (circle method). With an odd number of clubs one sits out each round. */
+function makeFixtures(teamIds) {
+  const ids = teamIds.slice();
   // shuffle so every season has a different draw
   for (let i = ids.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [ids[i], ids[j]] = [ids[j], ids[i]];
   }
+  if (ids.length % 2) ids.push(null); // null = the bye
   const n = ids.length;
   const rounds = [];
   const arr = ids.slice();
@@ -19,6 +19,7 @@ function makeFixtures() {
     for (let i = 0; i < n / 2; i++) {
       const a = arr[i];
       const b = arr[n - 1 - i];
+      if (a === null || b === null) continue;
       games.push(r % 2 === 0 ? [a, b] : [b, a]);
     }
     rounds.push(games);
@@ -30,7 +31,12 @@ function makeFixtures() {
 export function newSeason(teamId, opts) {
   const ladder = {};
   for (const t of TEAMS) ladder[t.id] = { p: 0, w: 0, l: 0, d: 0, pf: 0, pa: 0 };
-  return { teamId, opts, round: 0, fixtures: makeFixtures(), ladder, last: [], final: null, premier: null };
+  return { teamId, opts, round: 0, fixtures: makeFixtures(TEAMS.map((t) => t.id)), ladder, last: [], final: null, premier: null };
+}
+
+/** How many home-and-away rounds this season has. */
+export function rounds(s) {
+  return s.fixtures.length;
 }
 
 /** Make up a believable score for a game the player isn't in. */
@@ -68,19 +74,27 @@ function apply(ladder, r) {
   }
 }
 
+/** Ladder for the clubs in this season (a saved season keeps the clubs it started with). */
 export function sortedLadder(s) {
-  return TEAMS.map((t) => {
-    const r = s.ladder[t.id];
-    return { id: t.id, team: t, ...r, points: r.w * 4 + r.d * 2, pct: r.pa ? (r.pf / r.pa) * 100 : 100 };
-  }).sort((x, y) => y.points - x.points || y.pct - x.pct);
+  return Object.keys(s.ladder)
+    .map((id) => {
+      const r = s.ladder[id];
+      return { id, team: teamById(id), ...r, points: r.w * 4 + r.d * 2, pct: r.pa ? (r.pf / r.pa) * 100 : 100 };
+    })
+    .sort((x, y) => y.points - x.points || y.pct - x.pct);
 }
 
-/** The player's next game, or null when the season is over. */
+/**
+ * The player's next game, or null when the season is over.
+ * A week off comes back as { bye: true }.
+ */
 export function nextFixture(s) {
   if (s.premier) return null;
-  if (s.round < ROUNDS) {
+  if (s.round < rounds(s)) {
+    const label = `Round ${s.round + 1}`;
     const g = s.fixtures[s.round].find((f) => f.includes(s.teamId));
-    return { home: g[0], away: g[1], label: `Round ${s.round + 1}`, final: false };
+    if (!g) return { bye: true, label, final: false };
+    return { home: g[0], away: g[1], label, final: false };
   }
   if (!s.final) {
     const top = sortedLadder(s);
@@ -90,12 +104,15 @@ export function nextFixture(s) {
   return { home: s.final.home, away: s.final.away, label: 'Grand Final', final: true };
 }
 
-/** Record the player's result ({hg, hb, ag, ab} from the home side's view) and play out the rest of the round. */
+/**
+ * Record the player's result ({hg, hb, ag, ab} from the home side's view) and
+ * play out the rest of the round. On a bye week pass nothing.
+ */
 export function recordResult(s, result) {
   const fx = nextFixture(s);
   if (!fx) return;
-  const mine = { home: fx.home, away: fx.away, ...result };
   if (fx.final) {
+    const mine = { home: fx.home, away: fx.away, ...result };
     s.last = [mine];
     let hs = pts(mine.hg, mine.hb);
     const as = pts(mine.ag, mine.ab);
@@ -105,13 +122,13 @@ export function recordResult(s, result) {
   }
   const results = [];
   for (const [h, a] of s.fixtures[s.round]) {
-    const r = h === fx.home && a === fx.away ? mine : simulate(h, a);
+    const r = !fx.bye && h === fx.home && a === fx.away ? { home: h, away: a, ...result } : simulate(h, a);
     results.push(r);
     apply(s.ladder, r);
   }
   s.last = results;
   s.round++;
-  if (s.round >= ROUNDS) {
+  if (s.round >= rounds(s)) {
     const top = sortedLadder(s);
     s.final = { home: top[0].id, away: top[1].id };
     // If the player missed the Grand Final, it is played without them.
@@ -123,7 +140,6 @@ export function recordResult(s, result) {
         r.hb++;
         hs++;
       }
-      s.last = [...results];
       s.finalResult = r;
       s.premier = hs > as ? r.home : r.away;
     }

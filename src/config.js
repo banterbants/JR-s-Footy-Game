@@ -1,5 +1,8 @@
 // Game-wide constants: field geometry, positions, clubs and difficulty tuning.
 
+/** Shown on the title screen so you can tell which version a device is running. */
+export const VERSION = '1.2.0';
+
 /** Field geometry in metres. The oval's long axis runs along X, goals at both X ends. */
 export const F = {
   A: 80, // semi-axis along X (ground is 160 m long)
@@ -61,6 +64,7 @@ export const TEAMS = [
   { id: 'ASP', city: 'Alice Springs', nick: 'Dingoes', c1: '#c2461f', c2: '#f3dfb0', shorts: '#5a1f0c', socks: '#c2461f', pattern: 'panel', rating: 75 },
   { id: 'WOL', city: 'Wollongong', nick: 'Kookaburras', c1: '#39a9e8', c2: '#5b3a22', shorts: '#5b3a22', socks: '#39a9e8', pattern: 'sash', rating: 78 },
   { id: 'BEN', city: 'Bendigo', nick: 'Bushrangers', c1: '#7a1230', c2: '#e9b949', shorts: '#3d0918', socks: '#7a1230', pattern: 'stripes', rating: 81 },
+  { id: 'ABB', city: 'Abbotsford', nick: 'Magpies', c1: '#111114', c2: '#f4f4f0', shorts: '#111114', socks: '#111114', pattern: 'stripes', rating: 85 },
 ];
 
 export function teamById(id) {

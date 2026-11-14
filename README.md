@@ -4,7 +4,7 @@
 
 A fast, fun 3D Aussie rules football game that runs on **Windows, macOS, Android and iPhone/iPad** from a single link — and installs like an app on all of them.
 
-Take marks, snap goals, line up set shots, lay tackles and fly for screamers in a packed stadium, with a full 18-a-side match engine, eight clubs and a season mode.
+Take marks, snap goals, line up set shots, lay tackles and fly for screamers in a packed stadium, with a full 18-a-side match engine, nine clubs and a season mode.
 
 ## Features
 
@@ -12,7 +12,7 @@ Take marks, snap goals, line up set shots, lay tackles and fly for screamers in 
 - **Pick-up-and-play controls** – one stick and three buttons. Aim assist picks out team-mates and the goals, a ring shows where the ball will land, and the AI helps your player along when you let go of the stick.
 - **3D stadium** – day, twilight and night matches, real-time shadows, packed grandstands that leap up for goals, live scoreboards, confetti, cinematic set-shot and goal cameras.
 - **Sound** – a crowd that rises and falls with the play, umpire's whistle, the siren, leather on boot, post "doinks" and a brass-band menu tune (all synthesised, no downloads).
-- **Game modes** – Quick Match, plus a seven-round **Season** with a ladder and Grand Final. Three difficulty levels and 2, 3 or 5 minute quarters.
+- **Game modes** – Quick Match, plus a home-and-away **Season** with a ladder, bye weeks and a Grand Final. Three difficulty levels and 2, 3 or 5 minute quarters.
 - **Works everywhere** – keyboard, touch screen or gamepad. Installable, full-screen and playable offline.
 
 The clubs and league (the *Southern Cross League*) are original creations — this is an independent game and isn't affiliated with any real league or club.
@@ -39,11 +39,16 @@ Once installed it opens full screen, in landscape, and works without an internet
 | Handball · Switch player | `E` / `K` | Blue button | `B` / `X` |
 | Sprint | `Shift` / `L` | Green button | `RT` |
 | Pause | `Esc` / `P` | ❚❚ | `Start` |
+| Menus | Arrow keys, `Space` to select, `Esc` to go back | Tap | D-pad or stick, `A` to select, `B` to go back, `Start` for the main button |
 
 - **Kicking:** hold *Kick* to power up, aim with the stick, release. A light tap is a short pass; full power is a long bomb or a shot at goal. The blue ring shows which team-mate you'll hit.
 - **Marking:** run to the white ring where the ball will land and press *Mark* to fly for it. Catch a kick of 15 m or more and you get a free kick.
 - **Set shots:** mark within range and press *Kick* to line up — then stop the needle in the green.
 - **Defending:** press *Tackle* next to the ball carrier; *Switch* jumps to your closest player. Catch them holding the ball and the free kick is yours.
+
+## Updates
+
+There's nothing to reinstall. Each time the game is opened with an internet connection it quietly checks for a newer version. If one is found while you're still on the title screen, the game refreshes itself within a few seconds; if you've already started using the menus, an **Update ready** button appears instead (and the next launch has the new version either way). The version number is shown in the corner of the title screen.
 
 ## Putting it online
 

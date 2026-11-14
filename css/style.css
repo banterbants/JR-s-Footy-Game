@@ -63,6 +63,18 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .btn-primary:hover, .btn-primary:focus-visible { background: #ffe066; border-color: #fff; }
 .btn-ghost { background: rgba(255, 255, 255, 0.06); }
 .btn-install { border-color: var(--teal); color: var(--teal); }
+.btn-update { border-color: var(--gold); color: var(--gold); font-size: clamp(14px, 2.6vh, 19px); animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 20px rgba(255, 210, 31, 0.5); } }
+.version { position: absolute; right: calc(12px + var(--sar)); bottom: calc(8px + var(--sab)); color: rgba(255, 255, 255, 0.45); font-size: 13px; letter-spacing: 0.1em; pointer-events: none; }
+
+/* highlight for controller / keyboard navigation */
+.pad-focus { outline: 3px solid var(--gold); outline-offset: 3px; }
+.btn.pad-focus { background: rgba(34, 58, 122, 0.95); border-color: var(--gold); transform: skewX(-9deg) translateX(6px); box-shadow: 0 0 22px rgba(255, 210, 31, 0.45); }
+.btn-primary.pad-focus { background: #ffe066; border-color: #fff; outline-color: #fff; }
+.arrow.pad-focus { background: rgba(255, 210, 31, 0.3); transform: scale(1.12); }
+.seg button.pad-focus { outline-offset: -3px; color: var(--white); background: rgba(255, 255, 255, 0.14); }
+.seg button.on.pad-focus { color: #141414; background: #ffe066; outline-color: #fff; }
+input[type="range"].pad-focus { outline-offset: 6px; border-radius: 6px; }
 
 .panel {
   width: min(560px, 100%); max-height: 100%; overflow-y: auto; padding: clamp(12px, 2.6vh, 24px) clamp(14px, 3vw, 30px);
