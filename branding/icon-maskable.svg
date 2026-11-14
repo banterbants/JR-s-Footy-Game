@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-64 -64 640 640" width="1024" height="1024" role="img" aria-label="JR's Footy icon">
+  <title>JR's Footy</title>
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff07a"/><stop offset=".5" stop-color="#ffd21f"/><stop offset="1" stop-color="#ffb300"/>
+    </linearGradient>
+    <linearGradient id="white" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d5dff2"/>
+    </linearGradient>
+    <linearGradient id="leather" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ee5a3a"/><stop offset=".45" stop-color="#c2311d"/><stop offset="1" stop-color="#7c1a10"/>
+    </linearGradient>
+    <radialGradient id="ballGlow" cx=".3" cy=".25" r=".9">
+      <stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/>
+    </radialGradient>
+  </defs>
+  <defs>
+    <radialGradient id="sky" cx=".5" cy=".46" r=".75">
+      <stop offset="0" stop-color="#2f6fe0"/><stop offset=".55" stop-color="#17347c"/><stop offset="1" stop-color="#0a1330"/>
+    </radialGradient>
+    <linearGradient id="turf" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#46b54a"/><stop offset="1" stop-color="#1f7a33"/>
+    </linearGradient>
+    <linearGradient id="post" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9d4ea"/>
+    </linearGradient>
+  </defs>
+  <rect x="-64" y="-64" width="640" height="640" fill="url(#sky)"/>
+  <path d="M256 216 L876.0 216.0 L864.1 337.0Z M256 216 L828.8 453.3 L771.5 560.5Z M256 216 L694.4 654.4 L600.5 731.5Z M256 216 L493.3 788.8 L377.0 824.1Z M256 216 L256.0 836.0 L135.0 824.1Z M256 216 L18.7 788.8 L-88.5 731.5Z M256 216 L-182.4 654.4 L-259.5 560.5Z M256 216 L-316.8 453.3 L-352.1 337.0Z M256 216 L-364.0 216.0 L-352.1 95.0Z M256 216 L-316.8 -21.3 L-259.5 -128.5Z M256 216 L-182.4 -222.4 L-88.5 -299.5Z M256 216 L18.7 -356.8 L135.0 -392.1Z M256 216 L256.0 -404.0 L377.0 -392.1Z M256 216 L493.3 -356.8 L600.5 -299.5Z M256 216 L694.4 -222.4 L771.5 -128.5Z M256 216 L828.8 -21.3 L864.1 95.0Z" fill="#ffd21f" fill-opacity=".13"/>
+  <g><path d="M430 117 Q433.4 130.6 447 134 Q433.4 137.4 430 151 Q426.6 137.4 413 134 Q426.6 130.6 430 117Z" fill="#ffffff"/>
+<path d="M391.92 75 Q394.92 87 406.92 90 Q394.92 93 391.92 105 Q388.92 93 376.92 90 Q388.92 87 391.92 75Z" fill="#ffffff"/>
+<path d="M434.48 33 Q437.48 45 449.48 48 Q437.48 51 434.48 63 Q431.48 51 419.48 48 Q431.48 45 434.48 33Z" fill="#ffffff"/>
+<path d="M472.56 63 Q475.16 73.4 485.56 76 Q475.16 78.6 472.56 89 Q469.96 78.6 459.56 76 Q469.96 73.4 472.56 63Z" fill="#ffffff"/>
+<path d="M449.04 94.5 Q450.54 100.5 456.54 102 Q450.54 103.5 449.04 109.5 Q447.54 103.5 441.54 102 Q447.54 100.5 449.04 94.5Z" fill="#22d3c5"/></g>
+  <!-- the four posts -->
+  <rect x="73" y="232" width="22" height="172" rx="11" fill="url(#post)" stroke="#0b1530" stroke-width="5"/>
+    <rect x="68" y="350" width="32" height="58" rx="7" fill="#ffd21f" stroke="#0b1530" stroke-width="5"/>
+  <rect x="167" y="66" width="26" height="338" rx="13" fill="url(#post)" stroke="#0b1530" stroke-width="5"/>
+    <rect x="162" y="350" width="36" height="58" rx="7" fill="#ffd21f" stroke="#0b1530" stroke-width="5"/>
+  <rect x="319" y="66" width="26" height="338" rx="13" fill="url(#post)" stroke="#0b1530" stroke-width="5"/>
+    <rect x="314" y="350" width="36" height="58" rx="7" fill="#ffd21f" stroke="#0b1530" stroke-width="5"/>
+  <rect x="417" y="232" width="22" height="172" rx="11" fill="url(#post)" stroke="#0b1530" stroke-width="5"/>
+    <rect x="412" y="350" width="32" height="58" rx="7" fill="#ffd21f" stroke="#0b1530" stroke-width="5"/>
+  <!-- turf -->
+  <path d="M-64 404 Q256 372 576 404 V576 H-64Z" fill="url(#turf)"/>
+  <path d="M-64 404 Q256 372 576 404" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="7"/>
+  <path d="M-64 452 Q256 424 576 452 V576 H-64Z" fill="#1c6f2e" fill-opacity=".55"/>
+  <!-- the footy, sailing through the big sticks -->
+  <ellipse cx="263" cy="233" rx="146" ry="91" transform="rotate(-24 263 233)" fill="#000" fill-opacity=".3"/>
+  <g transform="translate(256 216) rotate(66) scale(0.78)">
+    <ellipse rx="112" ry="180" fill="#0b1530" stroke="#0b1530" stroke-width="20.51282051282051"/>
+    <ellipse rx="112" ry="180" fill="url(#leather)"/>
+    <ellipse rx="112" ry="180" fill="url(#ballGlow)"/>
+    <path d="M0 -176 C 46 -70 46 70 0 176" fill="none" stroke="#4d0f08" stroke-opacity=".5" stroke-width="7"/>
+    <path d="M-72 -136 Q0 -108 72 -136 M-72 136 Q0 108 72 136" fill="none" stroke="#4d0f08" stroke-opacity=".38" stroke-width="6"/>
+    <g stroke="#f8f0de" stroke-width="11" stroke-linecap="round" fill="none">
+      <path d="M-6 -58 V58"/>
+      <path d="M-30 -42 H18 M-30 -14 H18 M-30 14 H18 M-30 42 H18"/>
+    </g>
+    <ellipse cx="-44" cy="-92" rx="26" ry="58" transform="rotate(18 -44 -92)" fill="#fff" fill-opacity=".2"/>
+  </g>
+</svg>

@@ -1,7 +1,7 @@
 // Service worker: makes JR's Footy installable and playable offline.
 // Files are served from the cache straight away and refreshed in the
 // background, so the next launch always has the latest version.
-const CACHE = 'jrfooty-v1';
+const CACHE = 'jrfooty-v2';
 const CORE = [
   './',
   'index.html',
@@ -26,6 +26,8 @@ const CORE = [
   'fonts/barlow-condensed-latin-700-normal.woff2',
   'fonts/barlow-condensed-latin-700-italic.woff2',
   'fonts/barlow-condensed-latin-800-italic.woff2',
+  'branding/logo.svg',
+  'icons/favicon-48.png',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',

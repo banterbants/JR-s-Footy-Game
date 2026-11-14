@@ -1,5 +1,7 @@
 # JR's Footy 🏉
 
+![JR's Footy – fly for it](branding/hero.jpg)
+
 A fast, fun 3D Aussie rules football game that runs on **Windows, macOS, Android and iPhone/iPad** from a single link — and installs like an app on all of them.
 
 Take marks, snap goals, line up set shots, lay tackles and fly for screamers in a packed stadium, with a full 18-a-side match engine, eight clubs and a season mode.
@@ -91,6 +93,21 @@ npm test
 runs AI v AI games and games with a scripted "player" at each difficulty, checking that matches complete cleanly and printing scoring and balance statistics.
 
 All graphics are generated in code (procedural models and canvas-painted textures) and all audio is synthesised, so the entire game is about 1 MB.
+
+## Artwork
+
+Everything in [`branding/`](branding) is original and ready to use on a store page, website or social post:
+
+| File | What it is |
+| --- | --- |
+| `logo.svg` / `logo.png` | The JR's Footy logo on a transparent background (vector, and a 2000 px PNG). Works on dark, light and photo backgrounds. |
+| `logo-tagline.svg` / `logo-tagline.png` | The logo with the "Southern Cross League" line underneath. |
+| `icon.svg` / `icon-1024.png` | The app icon. `icon-maskable.svg` has extra padding for Android's shaped icons. The sizes the game itself uses live in `icons/`. |
+| `hero.jpg` | 2560 × 1440 key art with logo and tagline. |
+| `hero-clean.jpg` | The same artwork with no logo or text, for your own layouts. |
+| `social-card.jpg` | 1200 × 630 card for link previews. |
+
+The hero image is rendered with the game's own 3D engine, so it shows exactly what players get.
 
 ## Credits
 

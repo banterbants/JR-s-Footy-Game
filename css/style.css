@@ -44,12 +44,9 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 
 #title { background: linear-gradient(100deg, rgba(6, 11, 26, 0.92) 0%, rgba(6, 11, 26, 0.72) 38%, rgba(6, 11, 26, 0.05) 75%); justify-content: flex-start; }
 .title-wrap { margin-left: min(7vw, 90px); display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-height: 100%; }
-.logo { display: flex; align-items: center; gap: 14px; filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.55)); }
-.logo-ball { width: clamp(64px, 12vh, 120px); transform: rotate(-18deg); }
-.logo-text { display: flex; flex-direction: column; line-height: 0.8; font-style: italic; font-weight: 800; }
-.logo-jr { font-size: clamp(26px, 6vh, 54px); color: var(--white); letter-spacing: 0.04em; }
-.logo-footy { font-size: clamp(56px, 15vh, 132px); color: var(--gold); letter-spacing: 0.01em; text-shadow: 0 4px 0 #b88a00; }
-.tagline { font-size: clamp(13px, 2.6vh, 20px); letter-spacing: 0.34em; color: var(--teal); margin: 4px 0 clamp(6px, 2.5vh, 22px) 4px; }
+.title-brand { display: flex; flex-direction: column; align-items: flex-start; }
+.logo { display: block; height: clamp(120px, 31vh, 290px); width: auto; filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.55)); }
+.tagline { font-size: clamp(13px, 2.6vh, 20px); letter-spacing: 0.34em; color: var(--teal); margin: 2px 0 clamp(6px, 2.5vh, 22px) 6px; }
 .menu { display: flex; flex-direction: column; gap: clamp(6px, 1.4vh, 12px); width: min(320px, 70vw); }
 .record { margin-top: 8px; color: var(--muted); font-size: 16px; letter-spacing: 0.06em; min-height: 1em; }
 
@@ -265,6 +262,15 @@ body.touch #setshot { bottom: calc(18px + var(--sab)); width: min(400px, 44vw); 
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ------------------------------------------------------- small screens */
+@media (max-height: 480px) and (orientation: landscape) {
+  #title { background: linear-gradient(100deg, rgba(6, 11, 26, 0.93) 0%, rgba(6, 11, 26, 0.8) 55%, rgba(6, 11, 26, 0.1) 92%); }
+  .title-wrap { display: grid; grid-template-columns: auto auto; grid-template-areas: "brand menu" "record menu"; align-items: center; column-gap: 4.5vw; margin-left: min(4vw, 40px); }
+  .title-brand { grid-area: brand; align-self: end; }
+  .title-wrap .menu { grid-area: menu; width: min(290px, 36vw); }
+  .title-wrap .record { grid-area: record; align-self: start; margin: 0 0 0 6px; }
+  .logo { height: min(52vh, 24vw); }
+  .tagline { margin-bottom: 4px; }
+}
 @media (max-height: 480px) {
   html, body { font-size: 16px; }
   .howto-grid { gap: 12px; }
@@ -281,6 +287,8 @@ body.touch #setshot { bottom: calc(18px + var(--sab)); width: min(400px, 44vw); 
 @media (max-width: 720px) and (orientation: portrait) {
   #title { background: linear-gradient(180deg, rgba(6, 11, 26, 0.9), rgba(6, 11, 26, 0.55)); justify-content: center; }
   .title-wrap { margin-left: 0; align-items: center; }
+  .title-brand { align-items: center; }
+  .logo { height: auto; width: min(78vw, 420px); }
   .versus { gap: 4px; }
   .options { grid-template-columns: 1fr; }
   .howto-grid, .two-col { grid-template-columns: 1fr; }

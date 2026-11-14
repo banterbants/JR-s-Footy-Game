@@ -70,6 +70,9 @@ function headGeometry(skin, hair, style, hat) {
   return cached(`head:${skin}:${hair}:${style}:${hat || ''}`, () => {
     const parts = [
       [new THREE.SphereGeometry(0.15, 12, 9), skin, 0, 0.02, 0],
+      // eyes, so you can tell which way he's looking in the close-ups
+      [new THREE.SphereGeometry(0.021, 6, 5), '#1b1b1f', 0.136, 0.04, -0.054],
+      [new THREE.SphereGeometry(0.021, 6, 5), '#1b1b1f', 0.136, 0.04, 0.054],
       [new THREE.CylinderGeometry(0.06, 0.068, 0.12, 6), skin, 0, -0.14, 0],
     ];
     if (style !== 2) {

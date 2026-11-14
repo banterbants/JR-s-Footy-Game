@@ -11,6 +11,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="JR's Footy">
   <link rel="manifest" href="manifest.webmanifest">
+  <meta property="og:title" content="JR's Footy">
+  <meta property="og:description" content="A fast, fun 3D Aussie rules football game for PC, Mac, Android and iPhone.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="branding/social-card.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="preload" href="fonts/barlow-condensed-latin-800-italic.woff2" as="font" type="font/woff2" crossorigin>
@@ -58,15 +64,10 @@
   <div id="screens">
     <section id="title" class="screen">
       <div class="title-wrap">
-        <div class="logo">
-          <svg class="logo-ball" viewBox="0 0 120 80" aria-hidden="true">
-            <ellipse cx="60" cy="40" rx="56" ry="34" fill="#b02a18" stroke="#fff" stroke-width="4"/>
-            <path d="M8 40 Q60 22 112 40" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="3"/>
-            <path d="M44 40h32M48 33v14M56 32v16M64 32v16M72 33v14" stroke="#f3ead8" stroke-width="3.5" stroke-linecap="round"/>
-          </svg>
-          <div class="logo-text"><span class="logo-jr">JR'S</span><span class="logo-footy">FOOTY</span></div>
+        <div class="title-brand">
+          <img class="logo" src="branding/logo.svg" alt="JR's Footy" width="1063" height="600">
+          <div class="tagline">SOUTHERN CROSS LEAGUE</div>
         </div>
-        <div class="tagline">SOUTHERN CROSS LEAGUE</div>
         <nav class="menu">
           <button class="btn btn-primary" data-act="play">Play Match</button>
           <button class="btn" data-act="season">Season</button>
