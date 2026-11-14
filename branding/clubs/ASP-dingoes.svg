@@ -1,0 +1,23 @@
+<svg role="img" aria-label="Alice Springs Dingoes" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 222" width="200" height="222">
+  <defs><clipPath id="c"><path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" transform="translate(100 111) scale(0.85) translate(-100 -111)"/></clipPath></defs>
+  <path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" fill="#f3dfb0" stroke="#0b1530" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" transform="translate(100 111) scale(0.85) translate(-100 -111)" fill="#c2461f" stroke="#0b1530" stroke-width="4.5"/>
+  <g clip-path="url(#c)">
+    <g transform="translate(100 108) scale(0.86) translate(-100 -100)">
+    <path d="M46 34L88 70 52 100Z" fill="#f0c27a" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M154 34L112 70 148 100Z" fill="#f0c27a" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M56 52L78 72 60 88Z" fill="#d98f5a"/>
+    <path d="M144 52L122 72 140 88Z" fill="#d98f5a"/>
+    <path d="M48 96L82 66H118L152 96 160 126 128 158 100 176 72 158 40 126Z" fill="#f0c27a" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M82 66L100 86 118 66Z" fill="#d9a05b"/>
+    <path d="M40 126L72 158 100 176 128 158 160 126 130 132 100 150 70 132Z" fill="#fbf1d8" stroke="#0b1530" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M78 106L100 96 122 106 120 150 100 164 80 150Z" fill="#fbf1d8" stroke="#0b1530" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M84 142H116L100 160Z" fill="#0b1530" stroke="#0b1530" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M100 160V168" stroke="#0b1530" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M58 100L86 108 80 120 62 114Z" fill="#0b1530"/>
+    <path d="M142 100L114 108 120 120 138 114Z" fill="#0b1530"/>
+    <circle cx="74" cy="111" r="3.200" fill="#ffb400"/>
+    <circle cx="126" cy="111" r="3.200" fill="#ffb400"/></g>
+    <path d="M12 8H118L64 222H12Z" fill="#fff" fill-opacity="0.07"/>
+  </g>
+</svg>

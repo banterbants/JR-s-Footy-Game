@@ -1,0 +1,21 @@
+<svg role="img" aria-label="Darwin Crocs" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 222" width="200" height="222">
+  <defs><clipPath id="c"><path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" transform="translate(100 111) scale(0.85) translate(-100 -111)"/></clipPath></defs>
+  <path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" fill="#f6c62e" stroke="#0b1530" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" transform="translate(100 111) scale(0.85) translate(-100 -111)" fill="#0c6b43" stroke="#0b1530" stroke-width="4.5"/>
+  <g clip-path="url(#c)">
+    <g transform="translate(100 108) scale(0.86) translate(-100 -100)">
+    <path d="M62 98L176 86 180 128 62 126Z" fill="#7a1220" stroke="#0b1530" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M28 108L38 76 60 56 90 50 104 62 148 70 164 62 184 76 182 92 70 104 46 116Z" fill="#5fca6e" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M70 104L182 92 182 84 148 84 104 78 66 92 46 116Z" fill="#2f9a4a"/>
+    <path d="M28 108L38 76 60 56 90 50 104 62 148 70 164 62 184 76 182 92 70 104 46 116Z" fill="none" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M34 122L66 122 180 128 172 144 130 160 84 162 46 150Z" fill="#f6c62e" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M78.0 102.5L85.1 113.8L92.3 101.0ZM92.3 101.0L99.4 112.3L106.6 99.5ZM106.6 99.5L113.7 110.8L120.9 98.0ZM120.9 98.0L128.0 109.3L135.1 96.5ZM135.1 96.5L142.3 107.8L149.4 95.0ZM149.4 95.0L156.6 106.3L163.7 93.5ZM163.7 93.5L170.9 104.8L178.0 92.0Z" fill="#fff" stroke="#0b1530" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M80.0 123.0L87.8 112.4L95.7 123.8ZM95.7 123.8L103.5 113.1L111.3 124.5ZM111.3 124.5L119.2 113.9L127.0 125.3ZM127.0 125.3L134.8 114.6L142.7 126.0ZM142.7 126.0L150.5 115.4L158.3 126.8ZM158.3 126.8L166.2 116.1L174.0 127.5Z" fill="#fff" stroke="#0b1530" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M70 62L92 54 104 64 96 76 76 78Z" fill="#2f9a4a" stroke="#0b1530" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+    <ellipse cx="88" cy="68" rx="8" ry="6.5" fill="#ffe14a" stroke="#0b1530" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <ellipse cx="89" cy="68" rx="2.2" ry="5.5" fill="#0b1530"/>
+    <ellipse cx="170" cy="74" rx="4" ry="2.6" fill="#0b1530"/>
+    <path d="M38 76L42 58 52 66M50 62L58 44 68 54" fill="#2f9a4a" stroke="#0b1530" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/></g>
+    <path d="M12 8H118L64 222H12Z" fill="#fff" fill-opacity="0.07"/>
+  </g>
+</svg>

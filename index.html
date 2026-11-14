@@ -29,17 +29,17 @@
   <div id="hud" class="hidden">
     <div id="scorebar">
       <div class="sb-team sb-home">
-        <span class="sb-chip"></span><span class="sb-abbr">HOM</span><span class="sb-gb">0.0</span><span class="sb-total">0</span>
+        <img class="sb-crest" alt=""><span class="sb-abbr">HOM</span><span class="sb-gb">0.0</span><span class="sb-total">0</span>
       </div>
       <div class="sb-mid"><span class="sb-q">Q1</span><span class="sb-clock">3:00</span></div>
       <div class="sb-team sb-away">
-        <span class="sb-total">0</span><span class="sb-gb">0.0</span><span class="sb-abbr">AWY</span><span class="sb-chip"></span>
+        <span class="sb-total">0</span><span class="sb-gb">0.0</span><span class="sb-abbr">AWY</span><img class="sb-crest" alt="">
       </div>
     </div>
     <div id="ticker"></div>
     <canvas id="minimap" width="168" height="134"></canvas>
     <button id="pauseBtn" class="icon-btn" aria-label="Pause"><span></span><span></span></button>
-    <div id="banner"><div class="banner-main"></div><div class="banner-sub"></div></div>
+    <div id="banner"><div class="banner-row"><img class="banner-crest" alt=""><div class="banner-main"></div><img class="banner-crest" alt=""></div><div class="banner-sub"></div></div>
     <div id="power"><i></i></div>
     <div id="nameTag"></div>
     <div id="stamina"><i></i></div>
@@ -89,7 +89,7 @@
             <div class="pick-label">YOUR CLUB</div>
             <div class="pick-row">
               <button class="arrow" data-dir="-1" aria-label="Previous club">&#9664;</button>
-              <canvas class="kit" width="150" height="170"></canvas>
+              <div class="kit-wrap"><canvas class="kit" width="150" height="170"></canvas><img class="crest" alt=""></div>
               <button class="arrow" data-dir="1" aria-label="Next club">&#9654;</button>
             </div>
             <div class="pick-name"></div>
@@ -100,7 +100,7 @@
             <div class="pick-label">OPPONENT</div>
             <div class="pick-row">
               <button class="arrow" data-dir="-1" aria-label="Previous club">&#9664;</button>
-              <canvas class="kit" width="150" height="170"></canvas>
+              <div class="kit-wrap"><canvas class="kit" width="150" height="170"></canvas><img class="crest" alt=""></div>
               <button class="arrow" data-dir="1" aria-label="Next club">&#9654;</button>
             </div>
             <div class="pick-name"></div>

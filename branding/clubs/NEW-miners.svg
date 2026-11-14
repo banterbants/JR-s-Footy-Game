@@ -1,0 +1,21 @@
+<svg role="img" aria-label="Newcastle Miners" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 222" width="200" height="222">
+  <defs><clipPath id="c"><path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" transform="translate(100 111) scale(0.85) translate(-100 -111)"/></clipPath></defs>
+  <path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" fill="#ff7a1a" stroke="#0b1530" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" transform="translate(100 111) scale(0.85) translate(-100 -111)" fill="#17171a" stroke="#0b1530" stroke-width="4.5"/>
+  <g clip-path="url(#c)">
+    <g transform="translate(100 108) scale(0.86) translate(-100 -100)"><g transform="translate(100 114) rotate(-48)">
+      <rect x="-5.5" y="-82" width="11" height="156" rx="4" fill="#d9a05b" stroke="#0b1530" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M-38 -70Q0 -96 38 -70L35 -64Q0 -82 -35 -64Z" fill="#e3e9f0" stroke="#0b1530" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+      <rect x="-8" y="-88" width="16" height="14" rx="3" fill="#9aa6b8" stroke="#0b1530" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></g><g transform="translate(100 114) rotate(48)">
+      <rect x="-5.5" y="-82" width="11" height="156" rx="4" fill="#d9a05b" stroke="#0b1530" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M-38 -70Q0 -96 38 -70L35 -64Q0 -82 -35 -64Z" fill="#e3e9f0" stroke="#0b1530" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+      <rect x="-8" y="-88" width="16" height="14" rx="3" fill="#9aa6b8" stroke="#0b1530" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></g>
+      <path d="M52 126C52 78 74 58 100 58 126 58 148 78 148 126Z" fill="#ff7a1a" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M52 126C52 98 58 80 72 68 66 88 66 106 68 126Z" fill="#ffa65c"/>
+      <path d="M91 58H109V126H91Z" fill="#e0620a"/>
+      <rect x="40" y="120" width="120" height="16" rx="8" fill="#e0620a" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="100" cy="94" r="18" fill="#fff6c8" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="100" cy="94" r="9" fill="#ffd21f"/></g>
+    <path d="M12 8H118L64 222H12Z" fill="#fff" fill-opacity="0.07"/>
+  </g>
+</svg>

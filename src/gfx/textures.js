@@ -2,6 +2,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import { F } from '../config.js';
 import { makeRng } from '../util.js';
+import { emblemImage } from '../emblems.js';
 
 function canvas(w, h) {
   const c = document.createElement('canvas');
@@ -395,15 +396,20 @@ export function makeScoreboard() {
     g.fillStyle = '#080b12';
     g.fillRect(0, 0, 512, 192);
     const row = (t, y) => {
-      g.fillStyle = t.def.c1;
-      g.fillRect(10, y, 14, 60);
-      g.fillStyle = t.def.c2;
-      g.fillRect(24, y, 6, 60);
+      const crest = emblemImage(t.def);
+      if (crest) {
+        g.drawImage(crest, 8, y, 55, 61);
+      } else {
+        g.fillStyle = t.def.c1;
+        g.fillRect(10, y, 14, 60);
+        g.fillStyle = t.def.c2;
+        g.fillRect(24, y, 6, 60);
+      }
       g.fillStyle = '#ffffff';
       g.font = 'italic 800 54px "Barlow Condensed", "Arial Narrow", Impact, sans-serif';
       g.textAlign = 'left';
       g.textBaseline = 'middle';
-      g.fillText(t.def.id, 42, y + 33);
+      g.fillText(t.def.id, crest ? 74 : 42, y + 33);
       g.fillStyle = '#ffd21f';
       g.textAlign = 'right';
       g.fillText(`${t.goals}.${t.behinds}`, 300, y + 33);

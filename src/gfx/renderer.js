@@ -5,6 +5,7 @@ import { clamp, lerp } from '../util.js';
 import * as TX from './textures.js';
 import { Stadium } from './stadium.js';
 import { PlayerView, VIS_SCALE } from './players.js';
+import { emblemImage } from '../emblems.js';
 
 const MAX_PARTICLES = 520;
 const TRAIL = 16;
@@ -183,12 +184,43 @@ export class GameRenderer {
       this.scene.add(v.root);
     }
     this.stadium.setTeams(match.teams[0].def, match.teams[1].def);
+    this.paintCrest(match.teams[0].def);
     this.syncEnds(match);
     this.buildUmpires();
     this.pPos.fill(-999);
     this.pLife.fill(0);
     this.trailCol.fill(0);
     this.match = match;
+  }
+
+  /** The home club's crest, painted on the grass inside each fifty. */
+  paintCrest(team) {
+    if (!this.crestDecals) {
+      const geo = new THREE.PlaneGeometry(13, 13 * 1.11);
+      geo.rotateX(-Math.PI / 2);
+      this.crestMat = new THREE.MeshLambertMaterial({ transparent: true, opacity: 0.8, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+      this.crestDecals = [1, -1].map((end) => {
+        const mesh = new THREE.Mesh(geo, this.crestMat);
+        mesh.position.set(end * 46, 0.02, 0);
+        mesh.renderOrder = 0.5;
+        mesh.receiveShadow = true;
+        this.scene.add(mesh);
+        return mesh;
+      });
+    }
+    const img = emblemImage(team);
+    for (const d of this.crestDecals) d.visible = !!img;
+    if (!img) return;
+    const c = document.createElement('canvas');
+    c.width = 400;
+    c.height = 444;
+    c.getContext('2d').drawImage(img, 0, 0, 400, 444);
+    if (this.crestTex) this.crestTex.dispose();
+    this.crestTex = new THREE.CanvasTexture(c);
+    this.crestTex.colorSpace = THREE.SRGBColorSpace;
+    this.crestTex.anisotropy = this.aniso;
+    this.crestMat.map = this.crestTex;
+    this.crestMat.needsUpdate = true;
   }
 
   /** A goal umpire in the traditional white coat and hat stands behind each goal line. */

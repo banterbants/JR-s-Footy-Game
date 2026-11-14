@@ -8,6 +8,7 @@ import { GameAudio } from './audio.js';
 import { UI } from './ui.js';
 import { store } from './store.js';
 import * as Season from './season.js';
+import { loadEmblems } from './emblems.js';
 
 const QUALITY = {
   low: { antialias: false, shadows: false, maxDpr: 1 },
@@ -210,7 +211,7 @@ class Game {
       this.audio.setCrowd(true);
       this.audio.roar(0.5, 2.5);
       this.ui.fade(false);
-      this.ui.banner(`${home.id} v ${away.id}`, cfg.label || this.kickingText(), { dur: 2.2 });
+      this.ui.banner(`${home.id} v ${away.id}`, cfg.label || this.kickingText(), { dur: 2.6, crests: [home, away] });
       this.requestWake();
     }, 320);
   }
@@ -481,7 +482,7 @@ class Game {
         r.stadium.cheer(3.3);
         shake(0.5);
         const who = e.scorer ? `${e.scorer.name} #${e.scorer.number}` : t.def.nick;
-        ui.banner('GOAL!', `${who}${e.dist ? ` – ${Math.round(e.dist)}m` : ''}`, { opp: !ours, dur: 2.5 });
+        ui.banner('GOAL!', `${who}${e.dist ? ` – ${Math.round(e.dist)}m` : ''}`, { opp: !ours, dur: 2.5, crests: [t.def] });
         ui.say(`${fullName(t.def)} goal${e.scorer ? ` – ${e.scorer.name} has ${e.scorer.stats.goals}` : ''}`, 3.2);
         break;
       }
@@ -684,6 +685,8 @@ async function boot() {
   } catch (_) {
     /* fall back to system fonts */
   }
+  // club crests are drawn onto the scoreboard and the turf, so decode them first
+  await Promise.race([loadEmblems(TEAMS), new Promise((res) => setTimeout(res, 3000))]);
   try {
     window.game = new Game();
   } catch (err) {

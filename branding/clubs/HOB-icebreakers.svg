@@ -1,0 +1,20 @@
+<svg role="img" aria-label="Hobart Icebreakers" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 222" width="200" height="222">
+  <defs><clipPath id="c"><path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" transform="translate(100 111) scale(0.85) translate(-100 -111)"/></clipPath></defs>
+  <path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" fill="#8fd8ff" stroke="#0b1530" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" transform="translate(100 111) scale(0.85) translate(-100 -111)" fill="#12264f" stroke="#0b1530" stroke-width="4.5"/>
+  <g clip-path="url(#c)">
+    <g transform="translate(100 108) scale(0.86) translate(-100 -100)">
+    <path d="M100 14V52" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M100 16L122 24 100 32Z" fill="#ffd21f" stroke="#0b1530" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M72 52H128V84H72Z" fill="#fff" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M80 62H92V72H80ZM108 62H120V72H108ZM94 62H106V72H94Z" fill="#12264f"/>
+    <path d="M56 84H144L100 164Z" fill="#8fd8ff" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M100 84H144L100 164Z" fill="#4fa8dc"/>
+    <path d="M56 84H144L100 164Z" fill="none" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M62 84H138L134 94H66Z" fill="#e5383b"/>
+    <path d="M14 150L40 118 60 142 76 126 96 168 60 184 20 178Z" fill="#fff" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M186 150L160 118 140 142 124 126 104 168 140 184 180 178Z" fill="#e9f7ff" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M40 118L50 150 30 164M160 118L150 150 170 164M76 126L70 156M124 126L130 156" fill="none" stroke="#8fd8ff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></g>
+    <path d="M12 8H118L64 222H12Z" fill="#fff" fill-opacity="0.07"/>
+  </g>
+</svg>

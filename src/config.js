@@ -1,7 +1,7 @@
 // Game-wide constants: field geometry, positions, clubs and difficulty tuning.
 
 /** Shown on the title screen so you can tell which version a device is running. */
-export const VERSION = '1.2.0';
+export const VERSION = '1.3.0';
 
 /** Field geometry in metres. The oval's long axis runs along X, goals at both X ends. */
 export const F = {

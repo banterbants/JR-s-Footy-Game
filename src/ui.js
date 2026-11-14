@@ -4,6 +4,7 @@ import { fmtClock } from './util.js';
 import { store } from './store.js';
 import { paintGuernsey } from './gfx/textures.js';
 import * as Season from './season.js';
+import { emblemURL } from './emblems.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -37,12 +38,12 @@ export class UI {
     this.navActive = false;
     this.padEl = null;
     this.el = {
-      hud: $('#hud'), touch: $('#touch'), fade: $('#fade'), banner: $('#banner'), bannerMain: $('.banner-main'), bannerSub: $('.banner-sub'),
+      hud: $('#hud'), touch: $('#touch'), fade: $('#fade'), banner: $('#banner'), bannerMain: $('.banner-main'), bannerSub: $('.banner-sub'), bannerCrests: $$('.banner-crest'),
       ticker: $('#ticker'), prompt: $('#prompt'), power: $('#power'), powerFill: $('#power i'), tag: $('#nameTag'),
       stamina: $('#stamina'), staminaFill: $('#stamina i'), setshot: $('#setshot'), ssZone: $('.ss-zone'), ssNeedle: $('.ss-needle'), ssDist: $('#ssDist'),
       keys: $('#keys'), minimap: $('#minimap'), btnA: $('#btnA b'), btnB: $('#btnB b'), record: $('#record'),
-      sb: { hChip: $('.sb-home .sb-chip'), hAbbr: $('.sb-home .sb-abbr'), hGb: $('.sb-home .sb-gb'), hTot: $('.sb-home .sb-total'),
-        aChip: $('.sb-away .sb-chip'), aAbbr: $('.sb-away .sb-abbr'), aGb: $('.sb-away .sb-gb'), aTot: $('.sb-away .sb-total'), q: $('.sb-q'), clock: $('.sb-clock') },
+      sb: { hCrest: $('.sb-home .sb-crest'), hAbbr: $('.sb-home .sb-abbr'), hGb: $('.sb-home .sb-gb'), hTot: $('.sb-home .sb-total'),
+        aCrest: $('.sb-away .sb-crest'), aAbbr: $('.sb-away .sb-abbr'), aGb: $('.sb-away .sb-gb'), aTot: $('.sb-away .sb-total'), q: $('.sb-q'), clock: $('.sb-clock') },
     };
     this.mapCtx = this.el.minimap.getContext('2d');
     this.buildOptions();
@@ -359,6 +360,7 @@ export class UI {
     for (const pick of $$('#setup .pick')) {
       const t = teamById(pick.dataset.side === 'home' ? s.team : s.opp);
       this.drawKit($('.kit', pick), t);
+      $('.crest', pick).src = emblemURL(t);
       $('.pick-name', pick).textContent = fullName(t);
       $('.pick-rating', pick).textContent = `RATING ${t.rating}`;
     }
@@ -409,7 +411,7 @@ export class UI {
     const me = s.teamId;
     const ladder = Season.sortedLadder(s);
     const fx = Season.nextFixture(s);
-    const rows = ladder.map((r, i) => `<tr class="${r.id === me ? 'me' : ''}${i === 1 ? ' cut' : ''}"><td>${i + 1}</td><td><span class="dot" style="background:linear-gradient(90deg, ${r.team.c1} 55%, ${r.team.c2} 55%)"></span>${esc(fullName(r.team))}</td><td>${r.p}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d}</td><td>${r.pct.toFixed(0)}</td><td><b>${r.points}</b></td></tr>`).join('');
+    const rows = ladder.map((r, i) => `<tr class="${r.id === me ? 'me' : ''}${i === 1 ? ' cut' : ''}"><td>${i + 1}</td><td><img class="lcrest" src="${emblemURL(r.team)}" alt="">${esc(fullName(r.team))}</td><td>${r.p}</td><td>${r.w}</td><td>${r.l}</td><td>${r.d}</td><td>${r.pct.toFixed(0)}</td><td><b>${r.points}</b></td></tr>`).join('');
     const res = (r) => {
       const h = teamById(r.home);
       const a = teamById(r.away);
@@ -420,7 +422,7 @@ export class UI {
     let side = '';
     if (s.premier) {
       const p = teamById(s.premier);
-      side += `<span class="tag">PREMIERS</span><div class="next" style="color:var(--gold)">${esc(fullName(p))}</div>`;
+      side += `<span class="tag">PREMIERS</span><div class="next" style="color:var(--gold)"><img class="fx-crest" src="${emblemURL(p)}" alt="">${esc(fullName(p))}</div>`;
       side += s.premier === me ? '<p>You did it. The cup is yours!</p>' : '<p>Not this year. There\'s always next season.</p>';
       if (s.finalResult) side += `<div class="tag" style="margin-top:8px">GRAND FINAL</div>${res(s.finalResult)}`;
     } else if (fx && fx.bye) {
@@ -429,7 +431,8 @@ export class UI {
     } else if (fx) {
       const h = teamById(fx.home);
       const a = teamById(fx.away);
-      side += `<span class="tag">${fx.label.toUpperCase()}</span><div class="next">${esc(fullName(h))}<br>v ${esc(fullName(a))}</div>`;
+      const crest = (t) => `<img class="fx-crest" src="${emblemURL(t)}" alt="">`;
+      side += `<span class="tag">${fx.label.toUpperCase()}</span><div class="next">${crest(h)}${esc(fullName(h))}<br><span class="res">v</span><br>${crest(a)}${esc(fullName(a))}</div>`;
       side += `<p class="res">${fx.final ? 'Winner takes the cup.' : fx.home === me ? 'Home game' : 'Away game'}</p>`;
     }
     if (s.last && s.last.length && !s.premier) side += `<div class="tag" style="margin-top:8px">LAST ROUND</div>${s.last.map(res).join('')}`;
@@ -447,9 +450,9 @@ export class UI {
   scoreline(m) {
     const [a, b] = m.teams;
     return `<div class="scoreline">
-      <div class="t"><span class="chip" style="background:linear-gradient(${a.def.c1} 55%, ${a.def.c2} 55%)"></span><span>${esc(fullName(a.def))}</span></div>
+      <div class="t"><img class="sl-crest" src="${emblemURL(a.def)}" alt=""><span>${esc(fullName(a.def))}</span></div>
       <div class="pts"><span class="gb">${a.goals}.${a.behinds}</span>${total(a)} &ndash; ${total(b)}<span class="gb">${b.goals}.${b.behinds}</span></div>
-      <div class="t right"><span>${esc(fullName(b.def))}</span><span class="chip" style="background:linear-gradient(${b.def.c1} 55%, ${b.def.c2} 55%)"></span></div>
+      <div class="t right"><span>${esc(fullName(b.def))}</span><img class="sl-crest" src="${emblemURL(b.def)}" alt=""></div>
     </div>`;
   }
 
@@ -529,8 +532,8 @@ export class UI {
   initMatch(m, kits) {
     const [a, b] = m.teams;
     const sb = this.el.sb;
-    sb.hChip.style.background = `linear-gradient(${a.def.c1} 50%, ${a.def.c2} 50%)`;
-    sb.aChip.style.background = `linear-gradient(${b.def.c1} 50%, ${b.def.c2} 50%)`;
+    sb.hCrest.src = emblemURL(a.def);
+    sb.aCrest.src = emblemURL(b.def);
     sb.hAbbr.textContent = a.def.id;
     sb.aAbbr.textContent = b.def.id;
     this.cache = {};
@@ -543,10 +546,15 @@ export class UI {
     this.el.fade.classList.toggle('on', on);
   }
 
-  banner(text, sub = '', { small = false, opp = false, dur = 1.6 } = {}) {
+  /** Big announcement. `crests` is up to two clubs whose crests flank the text. */
+  banner(text, sub = '', { small = false, opp = false, dur = 1.6, crests = [] } = {}) {
     const b = this.el.banner;
     this.el.bannerMain.textContent = text;
     this.el.bannerSub.textContent = sub;
+    this.el.bannerCrests.forEach((img, i) => {
+      if (crests[i]) img.src = emblemURL(crests[i]);
+      else img.removeAttribute('src');
+    });
     b.className = '';
     void b.offsetWidth; // restart the animation
     b.className = `show${small ? ' small' : ''}${opp ? ' opp' : ''}`;

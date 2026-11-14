@@ -1,0 +1,17 @@
+<svg role="img" aria-label="Wollongong Kookaburras" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 222" width="200" height="222">
+  <defs><clipPath id="c"><path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" transform="translate(100 111) scale(0.85) translate(-100 -111)"/></clipPath></defs>
+  <path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" fill="#5b3a22" stroke="#0b1530" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M100 8C128 22 160 26 188 24V112C188 166 150 198 100 214 50 198 12 166 12 112V24C40 26 72 22 100 8Z" transform="translate(100 111) scale(0.85) translate(-100 -111)" fill="#39a9e8" stroke="#0b1530" stroke-width="4.5"/>
+  <g clip-path="url(#c)">
+    <g transform="translate(100 108) scale(0.86) translate(-100 -100)">
+    <path d="M40 186C34 150 36 116 52 94 70 68 106 60 130 80 142 90 144 108 136 122 124 142 120 162 120 186Z" fill="#f6eedd" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M40 186C36 162 36 142 42 122 50 150 64 172 84 186Z" fill="#2f8fd0" stroke="#0b1530" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M46 104C50 70 92 50 126 72 100 70 70 82 46 104Z" fill="#5b3a22" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M126 92L62 106 56 128 100 118 128 110Z" fill="#5b3a22" stroke="#0b1530" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M122 82L192 102 188 111 124 111Z" fill="#3a3f48" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M124 111L186 111 164 126 122 127Z" fill="#e9d9a0" stroke="#0b1530" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="107" cy="98" r="7.500" fill="#0b1530"/>
+    <circle cx="109.500" cy="95.500" r="2.400" fill="#fff"/></g>
+    <path d="M12 8H118L64 222H12Z" fill="#fff" fill-opacity="0.07"/>
+  </g>
+</svg>

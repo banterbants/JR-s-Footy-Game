@@ -85,6 +85,7 @@ src/audio.js          Web Audio synthesiser (crowd, whistle, siren, music)
 src/input.js          keyboard, touch and gamepad
 src/ui.js             menus, HUD, minimap, summaries
 src/season.js         season fixtures and ladder
+src/emblems.js        club crests (drawn as SVG)
 sw.js                 service worker (offline + install)
 tools/sim-test.mjs    headless match simulator used for testing and balancing
 ```
@@ -111,8 +112,13 @@ Everything in [`branding/`](branding) is original and ready to use on a store pa
 | `hero.jpg` | 2560 × 1440 key art with logo and tagline. |
 | `hero-clean.jpg` | The same artwork with no logo or text, for your own layouts. |
 | `social-card.jpg` | 1200 × 630 card for link previews. |
+| `clubs/*.svg` | Each club's crest as a vector file, plus `clubs/crests.png` showing all nine together. |
 
 The hero image is rendered with the game's own 3D engine, so it shows exactly what players get.
+
+![The clubs of JR's Footy](branding/clubs/crests.png)
+
+The crests are drawn in code (`src/emblems.js`). After changing one, run `node tools/export-crests.mjs` to refresh the files in `branding/clubs/`.
 
 ## Credits
 
