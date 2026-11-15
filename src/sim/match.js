@@ -2,7 +2,7 @@
 // It knows nothing about rendering or sound - it just emits events.
 import { F, G, POSITIONS, OPPONENT_OF, DIFFICULTY, SURNAMES, SKIN_TONES, HAIR_COLOURS } from '../config.js';
 import { clamp, lerp, makeRng, hashStr, angDiff, fieldValue, clampToField, dist, gauss } from '../util.js';
-import { updateAI, formationSpot } from './ai.js';
+import { updateAI, formationSpot, pickRuckman } from './ai.js';
 
 const BALL_R = 0.16;
 const CATCH_R = 1.35; // how far a standing player can reach for the ball
@@ -10,6 +10,7 @@ const JUMP_R = 1.9;
 const STAND_H = 2.45;
 const JUMP_H = 3.5;
 const PICKUP_R = 1.15;
+export const RUCK_RING = 0.36; // seconds before the ball arrives that the ruck timing ring closes
 const PRIOR_OPP = 1.4; // seconds with the ball before a tackle becomes "holding the ball"
 const MARK_MIN = 15; // a kick must travel 15 m to be marked
 const NO_INPUT = { mx: 0, mz: 0, kick: false, kickPressed: false, hbPressed: false, sprint: false };
@@ -45,6 +46,7 @@ function buildTeam(idx, def, dir) {
       mark: a(ruck ? 0.1 : key ? 0.15 : 0),
       tackle: a(fwd ? -0.05 : 0.05),
       strength: a(ruck || key ? 0.1 : 0),
+      ruck: a(ruck ? 0.22 : mid ? -0.04 : -0.14),
       height: ruck ? 2.0 + r() * 0.06 : key ? 1.93 + r() * 0.05 : 1.78 + r() * 0.12,
     };
     team.players.push({
@@ -56,7 +58,7 @@ function buildTeam(idx, def, dir) {
       stamina: 1, sprinting: false, hasBall: false, possT: 0, immuneT: 0, tackleCd: 0, carryDist: 0,
       charging: false, charge: 0, chargeHold: 0, aimX: dir, aimZ: 0,
       opp: null,
-      ai: { role: 'form', slot: 0, tx: 0, tz: 0, sprint: false, pace: 0.8, leadT: 0, leadX: 0, leadZ: 0, leadCd: r() * 2, decideT: 0, runT: 0, maxRun: 2, tackleWait: 0, jumpFor: -1, tired: false },
+      ai: { role: 'form', slot: 0, tx: 0, tz: 0, sprint: false, pace: 0.8, leadT: 0, leadX: 0, leadZ: 0, leadCd: r() * 2, decideT: 0, runT: 0, maxRun: 2, tackleWait: 0, jumpFor: -1, tired: false, ruckPlan: -1, ruckJumpAt: 0, ruckDone: -1 },
       stats: { kicks: 0, handballs: 0, marks: 0, tackles: 0, goals: 0, behinds: 0 },
     });
   });
@@ -96,6 +98,7 @@ export class Match {
     this.setShot = null;
     this.pending = null;
     this.ruck = null;
+    this.ruckC = null; // the ruck contest in the air, if any
     this.lastScore = null;
     this.possTeam = -1;
     this.focus = { x: 0, z: 0 };
@@ -193,10 +196,8 @@ export class Match {
     this.ruck = { x: 0, z: 0 };
     this.possTeam = -1;
     this.cutSent = false;
-    if (this.humanTeam >= 0) {
-      const rover = this.teams[this.humanTeam].players.find((p) => p.pos.id === 'ROV');
-      this.setControl(rover, 0);
-    }
+    this.ruckC = null;
+    this.takeRuck(0, 0);
     this.emit('setup', { first });
   }
 
@@ -220,7 +221,19 @@ export class Match {
     this.ruck = b.land ? { x: b.land.x, z: b.land.z } : { x, z };
     this.phase = 'play';
     this.pending = null;
+    this.ruckC = { id: b.id, hitT: b.land ? b.land.t : 2, x: this.ruck.x, z: this.ruck.z, jumped: new Set() };
+    this.takeRuck(this.ruck.x, this.ruck.z);
     this.emit('toss', { x, z });
+  }
+
+  /** At a bounce, ball-up or throw-in the human's ruckman steps up to contest it. */
+  takeRuck(x, z) {
+    if (this.humanTeam < 0) return;
+    const rk = pickRuckman(this.teams[this.humanTeam], x, z);
+    if (rk && this.control !== rk) {
+      this.setControl(rk, 0);
+      this.emit('ruckup', { player: rk });
+    }
   }
 
   startBallUp(x, z) {
@@ -235,6 +248,7 @@ export class Match {
     this.phase = 'stoppage';
     this.pending = { kind: 'ballup', x, z, t: 2.2 };
     this.ruck = { x, z };
+    this.takeRuck(x, z);
     this.emit('ballup', { x, z });
   }
 
@@ -322,6 +336,7 @@ export class Match {
     b.hasBounced = false;
     b.age = 0;
     b.noCatchT = 0;
+    b.reachT = 0;
     b.id++;
     p.hasBall = false;
     p.charging = false;
@@ -560,7 +575,7 @@ export class Match {
     if (tgt.type === 'goal') {
       this.kickBall(p, tgt.x, tgt.z, { isShot: true, spread: this.kickSpread(p, { pressured, set, shot: true, dG: tgt.d }) });
     } else {
-      this.kickBall(p, tgt.x, tgt.z, { intended: tgt.player, spread: this.kickSpread(p, { pressured, set }) * 0.8 });
+      this.kickBall(p, tgt.x, tgt.z, { intended: tgt.player, spread: this.kickSpread(p, { pressured, set }) * 0.95 / this.diff.kickAssist });
     }
   }
 
@@ -615,7 +630,18 @@ export class Match {
   humanAction(p, ax, az) {
     const b = this.ball;
     const c = b.holder;
-    if (b.state === 'free' && b.kind !== 'toss' && (b.y > 1.4 || (b.land && b.land.t > 0.15 && !b.hasBounced))) {
+    if (b.state === 'free' && b.kind === 'toss') {
+      // ruck contest: one jump each, so you have to time it
+      const rc = this.ruckC;
+      if (rc && !rc.jumped.has(p) && dist(p.x, p.z, b.x, b.z) < 6) {
+        rc.jumped.add(p);
+        p.ruckJump = b.id;
+        this.startJump(p);
+        this.emit('leap', { player: p });
+      }
+      return;
+    }
+    if (b.state === 'free' && (b.y > 1.4 || (b.land && b.land.t > 0.15 && !b.hasBounced))) {
       this.startJump(p);
       this.emit('leap', { player: p });
       return;
@@ -666,7 +692,14 @@ export class Match {
     }
     p.aimX = ax;
     p.aimZ = az;
+    p.aimInput = hasInput;
     c.target = null;
+    c.ruck = null;
+    if (!p.hasBall && this.ball.kind === 'toss' && this.ball.state === 'free' && this.ruckC) {
+      // show who a hit-out would go to
+      const mate = hasInput ? this.ruckMateByAim(p, ax, az) : null;
+      c.ruck = mate ? { player: mate } : null;
+    }
     const busy = p.action === 'down' || p.action === 'stumble' || p.action === 'tackle' || p.action === 'jump';
 
     if (p.hasBall) {
@@ -764,66 +797,164 @@ export class Match {
 
   // ------------------------------------------------------------- contests
 
+  /**
+   * How well a player has timed his jump for the ball coming down.
+   * The ideal is to be at the top of the leap when the ball arrives.
+   * Returns { q: 0..1, label } where label is perfect | good | early | late | none.
+   */
+  ruckTiming(p) {
+    const b = this.ball;
+    if (p.action === 'jump') {
+      // The ring on screen closes 0.36 s before the ball is due; the physics bring contact in
+      // about 0.04 s sooner, so a jump pressed as the ring closes is at the top of its leap.
+      const off = p.actionT - 0.32; // negative: still going up (late), positive: already coming down (early)
+      const q = Math.exp(-Math.pow(off / 0.2, 2));
+      const a = Math.abs(off);
+      return { q, label: a <= 0.08 ? 'perfect' : a <= 0.18 ? 'good' : off < 0 ? 'late' : 'early' };
+    }
+    if (p.ruckJump === b.id) return { q: 0, label: 'early' };
+    return { q: 0, label: 'none' };
+  }
+
+  /** The team-mate a hit-out would go to if aimed (ax, az). */
+  ruckMateByAim(p, ax, az) {
+    const b = this.ball;
+    let best = null;
+    let bc = 1e9;
+    for (const t of p.team.players) {
+      if (t === p || t.action === 'down' || t.action === 'stumble') continue;
+      const dx = t.x - b.x;
+      const dz = t.z - b.z;
+      const d = Math.hypot(dx, dz);
+      if (d < 2.5 || d > 19) continue;
+      const a = Math.acos(clamp((dx * ax + dz * az) / d, -1, 1));
+      if (a > 1.1) continue;
+      const cost = a * 1.3 + d * 0.03;
+      if (cost < bc) {
+        bc = cost;
+        best = t;
+      }
+    }
+    return best;
+  }
+
+  /** Where the computer-controlled ruckman puts it: an open mid with a bit of drive. */
+  ruckMateAI(win) {
+    const b = this.ball;
+    const opp = this.teams[1 - win.team.idx];
+    let mate = null;
+    let bw = 0;
+    for (const t of win.team.players) {
+      if (t === win || t.action === 'down' || t.action === 'stumble') continue;
+      const d = dist(t.x, t.z, b.x, b.z);
+      if (d > 16 || d < 2.5) continue;
+      let open = 99;
+      for (const o of opp.players) open = Math.min(open, dist(t.x, t.z, o.x, o.z));
+      const prog = (t.x - b.x) * win.team.dir;
+      const w = (1 / (d + 3)) * (0.55 + Math.min(open, 6) / 6) * (1 + clamp(prog, -6, 10) * 0.025) * (0.7 + this.rng() * 0.6);
+      if (w > bw) {
+        bw = w;
+        mate = t;
+      }
+    }
+    return mate;
+  }
+
+  /**
+   * The ball has come down to the ruckmen. Whoever timed the jump best, and is
+   * the better ruckman, gets the tap; a narrow win spills the ball instead.
+   */
   resolveRuck() {
     const b = this.ball;
+    const rc = this.ruckC;
     const cands = [null, null];
     for (const p of this.players) {
       if (p.action === 'down' || p.action === 'stumble') continue;
       const d = dist(p.x, p.z, b.x, b.z);
-      if (d > 2.8) continue;
-      const s = (p.pos.id === 'RUC' ? 0.5 : 0) + p.attr.height * 2 + p.attr.mark * 0.5 - d * 0.2 + this.rng() * 0.5;
+      if (d > 3.0) continue;
+      const tm = this.ruckTiming(p);
+      const heightN = clamp((p.attr.height - 1.75) / 0.3, 0, 1);
+      const skill = p.attr.ruck * 0.6 + heightN * 0.4;
+      let sc = tm.q * 0.5 + skill * 0.3 + clamp(1 - d / 3.0, 0, 1) * 0.1 + (p.pos.id === 'RUC' ? 0.04 : 0) + gauss(this.rng) * 0.06;
+      if (this.humanTeam >= 0 && !this.isHumanTeam(p)) sc += this.diff.aiRuck;
       const ti = p.team.idx;
-      if (!cands[ti] || s > cands[ti].s) cands[ti] = { p, s };
+      if (!cands[ti] || sc > cands[ti].sc) cands[ti] = { p, sc, tm };
     }
     this.ruck = null;
+    this.ruckC = null;
     b.land = null;
     if (!cands[0] && !cands[1]) {
       b.kind = 'loose';
       return;
     }
     let win;
-    if (cands[0] && cands[1]) win = cands[0].s > cands[1].s ? cands[0].p : cands[1].p;
-    else win = (cands[0] || cands[1]).p;
-    this.startJump(win);
-    win.actionT = 0.25;
-    // tap it down to a team-mate at the feet of the pack
-    let mate = null;
-    let bw = 0;
-    for (const t of win.team.players) {
-      if (t === win || t.action === 'down') continue;
-      const d = dist(t.x, t.z, b.x, b.z);
-      if (d > 15) continue;
-      const w = (1 / (d + 3)) * (0.6 + this.rng());
-      if (w > bw) {
-        bw = w;
-        mate = t;
-      }
+    let lose = null;
+    if (cands[0] && cands[1]) {
+      win = cands[0].sc > cands[1].sc ? cands[0] : cands[1];
+      lose = win === cands[0] ? cands[1] : cands[0];
+    } else win = cands[0] || cands[1];
+    const margin = lose ? win.sc - lose.sc : 0.4;
+    const clean = margin >= 0.07;
+    const w = win.p;
+    if (w.action !== 'jump') {
+      this.startJump(w);
+      w.actionT = 0.25;
     }
+    // what a human ruckman is told about his timing
+    const human = [win, lose].find((c) => c && this.isHumanTeam(c.p) && c.p === this.control);
+    const report = human ? human.tm.label : null;
+
+    if (!clean) {
+      // too close to call: it spills off the pack
+      const a = this.rng() * Math.PI * 2;
+      const sp = 3 + this.rng() * 2.5;
+      b.kind = 'loose';
+      b.kicker = null;
+      b.intended = null;
+      b.hasBounced = true;
+      b.vx = Math.cos(a) * sp;
+      b.vz = Math.sin(a) * sp;
+      b.vy = 2 + this.rng() * 2;
+      b.noCatchT = 0.2;
+      b.age = 0;
+      this.emit('ruck', { winner: w, clean: false, report, human: !!human, won: human ? human === win : null });
+      if (this.humanTeam >= 0) this.setControl(this.bestHumanPlayer(null) || this.control, 0.2);
+      return;
+    }
+
+    // choose where it goes
+    let mate;
+    if (w === this.control && w.aimInput) mate = this.ruckMateByAim(w, w.aimX, w.aimZ) || this.ruckMateAI(w);
+    else mate = this.ruckMateAI(w);
+    // a bigger win means a more accurate tap
+    const err = 0.4 + 2.6 * (1 - clamp(margin / 0.4, 0, 1));
     let tx;
     let tz;
     if (mate) {
-      tx = mate.x + mate.vx * 0.4 + (this.rng() - 0.5) * 3;
-      tz = mate.z + mate.vz * 0.4 + (this.rng() - 0.5) * 3;
+      tx = mate.x + mate.vx * 0.4 + gauss(this.rng) * err * 0.6;
+      tz = mate.z + mate.vz * 0.4 + gauss(this.rng) * err * 0.6;
     } else {
-      tx = b.x + win.team.dir * 5;
+      tx = b.x + w.team.dir * 5;
       tz = b.z + (this.rng() - 0.5) * 6;
     }
+    [tx, tz] = clampToField(tx, tz, 3);
     const d = Math.max(1.5, dist(b.x, b.z, tx, tz));
     const T = 0.5 + d / 20;
     b.vx = (tx - b.x) / T;
     b.vz = (tz - b.z) / T;
     b.vy = (1.0 - b.y + 0.5 * G * T * T) / T;
     b.kind = 'tap';
-    b.kicker = win;
-    b.lastTeam = win.team.idx;
+    b.kicker = w;
+    b.lastTeam = w.team.idx;
     b.intended = mate;
     b.age = 0;
     b.noCatchT = 0.15;
     b.id++;
     b.land = this.computeLanding(1.0);
-    this.possTeam = win.team.idx;
-    win.team.stats.hitouts++;
-    this.emit('tap', { player: win });
+    this.possTeam = w.team.idx;
+    w.team.stats.hitouts++;
+    this.emit('tap', { player: w });
+    this.emit('ruck', { winner: w, clean: true, report, human: !!human, won: human ? human === win : null, margin });
     this.onBallInFlight();
   }
 
@@ -872,6 +1003,24 @@ export class Match {
     }
   }
 
+  /** How hard the opposition are leaning on a player, 0 (alone) to about 1.3 (smothered). */
+  markPressure(p) {
+    let value = 0;
+    let nearest = null;
+    let nd = 99;
+    for (const o of this.teams[1 - p.team.idx].players) {
+      if (o.action === 'down' || o.action === 'stumble') continue;
+      const d = dist(p.x, p.z, o.x, o.z);
+      if (d >= 3.2) continue;
+      value += (1 - d / 3.2) * (o.action === 'jump' ? 1.2 : 1);
+      if (d < nd) {
+        nd = d;
+        nearest = o;
+      }
+    }
+    return { value: Math.min(1.3, value), nearest };
+  }
+
   resolveCatches() {
     const b = this.ball;
     if (b.state !== 'free' || b.noCatchT > 0 || b.kind === 'toss' || b.age < 0.12) return;
@@ -884,31 +1033,46 @@ export class Match {
       if (p.action === 'down' || p.action === 'stumble') continue;
       if (p === b.kicker && b.age < 0.5) continue;
       const dh = dist(p.x, p.z, b.x, b.z);
-      if (dh > 2.4) continue;
+      if (dh > 3.1) continue;
       const jumping = p.action === 'jump' && p.actionT > 0.08 && p.actionT < 0.62;
-      const human = p === this.control ? 0.25 : 0;
+      const human = p === this.control ? this.diff.humanReach : 0;
       const H = jumping ? JUMP_H : STAND_H;
       const R = (ground ? PICKUP_R : jumping ? JUMP_R : CATCH_R) + human;
       const can = dh <= R && b.y <= H;
       if (can) any = true;
-      if (b.y <= H + 0.6) group.push({ p, dh, jumping, can, s: 0 });
+      if (b.y <= H + 0.6) group.push({ p, dh, jumping, can, near: dh <= R + 0.9, s: 0 });
     }
     if (!any) return;
+    if (b.kind === 'kick' && !b.hasBounced) {
+      // The first hand to the ball doesn't win outright: if someone else is about to be in
+      // reach too, let it come down another instant so both get a genuine go at it.
+      const lagging = group.some((g) => !g.can && g.near && g.p.team !== group.find((x) => x.can).p.team);
+      if (!b.reachT) b.reachT = this.time;
+      if (lagging && this.time - b.reachT < 0.1) return;
+    }
 
     const flyingKick = b.kind === 'kick' && !b.hasBounced;
     if (flyingKick) {
       for (const g of group) {
         const p = g.p;
         g.s = 0.55 * p.attr.mark + this.rng() * 0.55 + (p.attr.height - 1.85) * 1.2 + (g.jumping ? 0.22 : 0) +
-          (p === b.intended ? 0.14 : 0) + (p === this.control ? this.diff.humanMark + 0.05 : 0) + (g.can ? 0.2 : 0) - g.dh * 0.08;
+          (p === b.intended ? 0.14 : 0) + (p === this.control ? this.diff.humanMark : 0) + (g.can ? 0.12 : 0) - g.dh * 0.1;
       }
       group.sort((a, c) => c.s - a.s);
-      const w = group.find((g) => g.can);
-      const rivals = group.filter((g) => g.p.team !== w.p.team && g.dh < 2.1);
+      // Anyone within a hand's reach of it is in the contest, not just whoever gets there first
+      const w = group.find((g) => g.near && g.can) || group.find((g) => g.can);
+      const rivals = group.filter((g) => g.p.team !== w.p.team && g.near);
       if (rivals.length === 0) {
-        let pm = 0.84 + 0.14 * w.p.attr.mark + (w.jumping ? 0.04 : 0);
-        if (w.p === this.control) pm += 0.06;
-        if (this.rng() < pm) this.takeMark(w.p, { contested: false, specky: false });
+        // Clear of the pack - but a defender breathing down your neck still makes it hard
+        // to hold, and a long, fast ball is harder to pluck.
+        const press = this.markPressure(w.p);
+        const kd = dist(b.fromX, b.fromZ, w.p.x, w.p.z);
+        let pm = 0.66 + 0.26 * w.p.attr.mark + (w.jumping ? 0.03 : 0) - clamp((kd - 38) / 90, 0, 0.1);
+        if (w.p === this.control) pm += this.diff.humanMark;
+        pm -= press.value * 0.34 * (this.humanTeam >= 0 && this.isHumanTeam(w.p) ? this.diff.pressure : 1);
+        pm = clamp(pm, 0.18, 0.97);
+        if (this.rng() < pm) this.takeMark(w.p, { contested: press.value > 0.35, specky: false });
+        else if (press.nearest && press.value > 0.3 && this.rng() < 0.65) this.spoil(press.nearest);
         else this.fumble(w.p);
       } else {
         const margin = w.s - rivals[0].s;
@@ -1031,6 +1195,7 @@ export class Match {
       nz /= n;
       this.pending = { kind: 'throwin', x, z, nx, nz, t: 2.6, t0: 2.6 };
       this.ruck = { x: x + nx * 13, z: z + nz * 13 };
+      this.takeRuck(this.ruck.x, this.ruck.z);
       this.emit('oob', { full: false });
     }
   }
@@ -1097,6 +1262,7 @@ export class Match {
         if (b.kind === 'toss') {
           b.kind = 'loose';
           this.ruck = null;
+          this.ruckC = null;
         }
       } else {
         b.vy = 0;
@@ -1155,6 +1321,8 @@ export class Match {
       if (human && !p.hasBall) {
         if (c.grace > 0) useAI = true;
         else if (!stick && c.idleT > 0.3) useAI = true;
+        // in a ruck contest the stick only aims the tap; the ruckman stays planted under the ball
+        else if (this.ruckC && this.ball.kind === 'toss' && this.ball.state === 'free' && dist(p.x, p.z, this.ball.x, this.ball.z) < 7) useAI = true;
       }
       if (!useAI) {
         if (stick) {

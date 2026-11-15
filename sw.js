@@ -4,7 +4,7 @@
 // instantly, even with no connection) and re-checked against the server in the
 // background. When anything has changed, the page is told so it can swap to the
 // new version.
-const CACHE = 'jrfooty-v4';
+const CACHE = 'jrfooty-v5';
 const CORE = [
   './',
   'index.html',

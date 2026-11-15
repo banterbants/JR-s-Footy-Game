@@ -371,9 +371,9 @@ class Game {
   // ----------------------------------------------------------------- events
 
   keyName(k) {
-    if (this.input.isTouch) return { a: 'KICK', b: 'HANDBALL', s: 'SPRINT', tackle: 'TACKLE', mark: 'MARK', sw: 'SWITCH' }[k];
-    if (this.input.usedPad) return { a: 'A', b: 'B', s: 'RT', tackle: 'A', mark: 'A', sw: 'B' }[k];
-    return { a: 'SPACE', b: 'E', s: 'SHIFT', tackle: 'SPACE', mark: 'SPACE', sw: 'E' }[k];
+    if (this.input.isTouch) return { a: 'KICK', b: 'HANDBALL', s: 'SPRINT', tackle: 'TACKLE', mark: 'MARK', sw: 'SWITCH', jump: 'JUMP' }[k];
+    if (this.input.usedPad) return { a: 'A', b: 'B', s: 'RT', tackle: 'A', mark: 'A', sw: 'B', jump: 'A' }[k];
+    return { a: 'SPACE', b: 'E', s: 'SHIFT', tackle: 'SPACE', mark: 'SPACE', sw: 'E', jump: 'SPACE' }[k];
   }
 
   hint(key, html) {
@@ -411,6 +411,22 @@ class Game {
       case 'tap':
         a.handball();
         break;
+      case 'ruckup':
+        ui.showTag(e.player);
+        break;
+      case 'ruck': {
+        const w = e.winner;
+        const mate = m.ball.intended;
+        if (e.human && e.report) {
+          const text = { perfect: 'PERFECT JUMP!', good: 'GOOD JUMP', early: 'TOO EARLY!', late: 'TOO LATE!', none: 'NO JUMP!' }[e.report];
+          const sub = !e.clean ? 'Dead heat \u2013 the ball spills free' : e.won ? 'You win the tap' : `${w.name} wins the tap`;
+          ui.banner(text, sub, { small: true, opp: !(e.report === 'perfect' || e.report === 'good'), dur: 1.4 });
+        }
+        if (e.clean) ui.say(`${w.name} taps it${mate ? ` to ${mate.name}` : ' down'}`, 2.2);
+        else ui.say('Ball spills out of the ruck', 2);
+        if (e.clean && e.margin > 0.3) a.roar(0.2, 1);
+        break;
+      }
       case 'kick':
         a.kick(e.power);
         if (e.shot) a.roar(0.3, 1.3);
@@ -560,7 +576,13 @@ class Game {
     if (this.hintT > 0) this.hintT -= dt;
     let prompt = '';
     const touch = this.input.isTouch;
-    if (m.phase === 'free' && m.free && m.free.player === c && c) {
+    const b0 = m.ball;
+    const ruckSetup = c && !c.hasBall && (m.phase === 'bounce' || (m.phase === 'stoppage' && m.pending && (m.pending.kind === 'ballup' || m.pending.kind === 'throwin')));
+    if (ruckSetup) {
+      prompt = `You&rsquo;re in the ruck &ndash; get ready to <b>${this.keyName('jump')}</b> as the ring closes`;
+    } else if (c && m.ruckC && b0.kind === 'toss' && b0.state === 'free') {
+      prompt = `<b>RUCK!</b> Press <b>${this.keyName('jump')}</b> as the ring closes &nbsp;&middot;&nbsp; aim the stick to pick who gets it`;
+    } else if (m.phase === 'free' && m.free && m.free.player === c && c) {
       const f = m.free;
       const left = Math.max(0, Math.ceil(f.limit - f.t));
       if (m.setShot) prompt = touch ? '' : `<b>${this.keyName('a')}</b> to shoot &nbsp;&middot;&nbsp; <b>${this.keyName('b')}</b> play on`;

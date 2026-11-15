@@ -6,6 +6,7 @@ import * as TX from './textures.js';
 import { Stadium } from './stadium.js';
 import { PlayerView, VIS_SCALE } from './players.js';
 import { emblemImage } from '../emblems.js';
+import { RUCK_RING } from '../sim/match.js';
 
 const MAX_PARTICLES = 520;
 const TRAIL = 16;
@@ -78,6 +79,8 @@ export class GameRenderer {
     this.targetRing = flat(new THREE.RingGeometry(0.85, 1.1, 40), 0x39e6ff, 0.95);
     this.landRing = flat(new THREE.RingGeometry(0.82, 1.0, 40), 0xffffff, 0.9);
     this.landDot = flat(new THREE.CircleGeometry(0.28, 20), 0xffffff, 0.9);
+    this.ruckRing = flat(new THREE.RingGeometry(0.88, 1.06, 48), 0xffe14a, 0.95);
+    this.ruckFill = flat(new THREE.CircleGeometry(0.88, 36), 0x46e07a, 0.0);
     this.freeZone = flat(new THREE.RingGeometry(3.45, 3.6, 64), 0xffffff, 0.35);
     // aiming arrow in front of the kicker
     const sh = new THREE.Shape();
@@ -447,7 +450,8 @@ export class GameRenderer {
     // markers
     const live = match.phase === 'play' || match.phase === 'free';
     const pulse = 1 + Math.sin(time * 7) * 0.07;
-    if (ctrl && live && hud && !this.shotCam) {
+    const ruckSetup = (match.phase === 'bounce' || match.phase === 'stoppage') && !!match.ruck;
+    if (ctrl && (live || ruckSetup) && hud && !this.shotCam) {
       this.controlRing.visible = true;
       this.controlRing.position.set(ctrl.x, 0.05, ctrl.z);
       this.controlRing.scale.setScalar(pulse);
@@ -485,6 +489,9 @@ export class GameRenderer {
       this.aimArrow.material.color.setHSL(lerp(0.15, 0.0, ctrl.charge), 1, 0.6);
     }
     const land = b.state === 'free' && b.land && !b.hasBounced && b.kind === 'kick' && live ? b.land : null;
+    const ruck = b.state === 'free' && b.kind === 'toss' && b.land && match.ruckC && live ? b.land : null;
+    this.ruckRing.visible = false;
+    this.ruckFill.visible = false;
     if (land && hud) {
       const k = 1 + clamp(land.t, 0, 2.5) * 0.9;
       this.landRing.visible = true;
@@ -492,9 +499,41 @@ export class GameRenderer {
       this.landRing.position.set(land.x, 0.05, land.z);
       this.landDot.position.set(land.x, 0.05, land.z);
       this.landRing.scale.setScalar(k);
+      this.landRing.material.color.setHex(0xffffff);
+    } else if (ruck && hud) {
+      // ruck timing: the white ring closes onto the gold one - jump as they meet
+      const off = ruck.t - RUCK_RING;
+      const inWindow = Math.abs(off) <= 0.09;
+      const k = 1 + clamp(off, 0, 2.2) * 1.5;
+      this.landRing.visible = true;
+      this.landDot.visible = false;
+      this.landRing.position.set(ruck.x, 0.06, ruck.z);
+      this.landRing.scale.setScalar(k);
+      this.landRing.material.color.setHex(inWindow ? 0x46e07a : 0xffffff);
+      this.ruckRing.visible = true;
+      this.ruckRing.position.set(ruck.x, 0.055, ruck.z);
+      this.ruckRing.scale.setScalar(1);
+      this.ruckRing.material.color.setHex(inWindow ? 0x46e07a : 0xffe14a);
+      if (inWindow) {
+        this.ruckFill.visible = true;
+        this.ruckFill.position.set(ruck.x, 0.052, ruck.z);
+        this.ruckFill.material.opacity = 0.35;
+      }
     } else {
       this.landRing.visible = false;
       this.landDot.visible = false;
+    }
+    // where a hit-out would go, if you're aiming it
+    if (ruck && hud && ctrl && match.ctrl.ruck && match.ctrl.ruck.player) {
+      const mate = match.ctrl.ruck.player;
+      this.targetRing.visible = true;
+      this.targetRing.position.set(mate.x, 0.05, mate.z);
+      this.targetRing.scale.setScalar(1.15 * pulse);
+      this.aimArrow.visible = true;
+      this.aimArrow.position.set(ruck.x, 0.05, ruck.z);
+      this.aimArrow.rotation.y = -Math.atan2(mate.z - ruck.z, mate.x - ruck.x);
+      this.aimArrow.scale.set(Math.min(9, Math.max(3, Math.hypot(mate.x - ruck.x, mate.z - ruck.z) * 0.6)), 1, 1.4);
+      this.aimArrow.material.color.setHex(0x39e6ff);
     }
     if (free && hud && free.player === ctrl && !match.setShot) {
       this.freeZone.visible = true;

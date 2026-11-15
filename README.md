@@ -9,6 +9,8 @@ Take marks, snap goals, line up set shots, lay tackles and fly for screamers in 
 ## Features
 
 - **Full Aussie rules match engine** – 18 v 18, centre bounces and ruck contests, marks, handballs, tackles and holding the ball, set shots, behinds, kick-ins, boundary throw-ins, out on the full, four quarters and after-the-siren kicks.
+- **A real ruck contest** – every bounce, ball-up and boundary throw-in is yours to win: time your jump as the ring closes, then steer the tap to the team-mate you want. Good rucks win clean hit-outs; mistimed jumps spill the ball or hand it to the other side.
+- **Marks you have to earn** – defenders now read the ball in flight, get in front and fly to spoil, and a man breathing down your neck makes a mark hard to hold. Standing in front of a defender no longer guarantees anything.
 - **Pick-up-and-play controls** – one stick and three buttons. Aim assist picks out team-mates and the goals, a ring shows where the ball will land, and the AI helps your player along when you let go of the stick.
 - **3D stadium** – day, twilight and night matches, real-time shadows, packed grandstands that leap up for goals, live scoreboards, confetti, cinematic set-shot and goal cameras.
 - **Sound** – a crowd that rises and falls with the play, umpire's whistle, the siren, leather on boot, post "doinks" and a brass-band menu tune (all synthesised, no downloads).
@@ -44,6 +46,7 @@ Once installed it opens full screen, in landscape, and works without an internet
 - **Kicking:** hold *Kick* to power up, aim with the stick, release. A light tap is a short pass; full power is a long bomb or a shot at goal. The blue ring shows which team-mate you'll hit.
 - **Marking:** run to the white ring where the ball will land and press *Mark* to fly for it. Catch a kick of 15 m or more and you get a free kick.
 - **Set shots:** mark within range and press *Kick* to line up — then stop the needle in the green.
+- **Ruck contests:** at a bounce or ball-up your ruckman steps up. Press *Kick* (shown as *Jump* on touch) just as the white ring closes onto the gold ring, and aim with the stick to pick who gets the tap. Too early, too late or not at all, and the other ruckman wins it.
 - **Defending:** press *Tackle* next to the ball carrier; *Switch* jumps to your closest player. Catch them holding the ball and the free kick is yours.
 
 ## Updates

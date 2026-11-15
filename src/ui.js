@@ -658,8 +658,9 @@ export class UI {
     let lb = 'HAND\nBALL';
     if (c && !c.hasBall) {
       const ball = m.ball;
+      const toss = ball.state === 'free' && ball.kind === 'toss';
       const air = ball.state === 'free' && ball.kind !== 'toss' && (ball.y > 1.4 || (ball.land && !ball.hasBounced));
-      la = air ? 'MARK' : 'TACKLE';
+      la = toss ? 'JUMP' : air ? 'MARK' : 'TACKLE';
       lb = 'SWITCH';
     } else if (ss) {
       la = 'SHOOT';

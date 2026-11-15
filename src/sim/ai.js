@@ -1,7 +1,7 @@
 // Team and player AI. Every player gets a role each tick, a spot to run to,
 // and (when not human-controlled) decides when to kick, handball, tackle or leap.
-import { F } from '../config.js';
-import { clamp, lerp, clampToField, dist } from '../util.js';
+import { F, DIFFICULTY } from '../config.js';
+import { clamp, lerp, clampToField, dist, gauss } from '../util.js';
 
 /** Where a position "lives" given where the ball is. */
 export function formationSpot(p, bx, bz, strict = false) {
@@ -16,6 +16,9 @@ export function formationSpot(p, bx, bz, strict = false) {
 
 const isDown = (p) => p.action === 'down' || p.action === 'stumble';
 
+/** Opposition players use the chosen difficulty; the human's own team-mates play at a steady "Pro". */
+const tune = (m, p) => (m.humanTeam >= 0 && p.team.idx === m.humanTeam ? DIFFICULTY.medium : m.diff);
+
 function byDistance(players, x, z, filter) {
   const out = [];
   for (const p of players) {
@@ -26,14 +29,21 @@ function byDistance(players, x, z, filter) {
   return out;
 }
 
+/** The man who contests a ruck at (x, z): the ruck if he's in range, otherwise whoever is closest. */
+export function pickRuckman(team, x, z) {
+  const ps = team.players;
+  let ruckman = ps.find((p) => p.pos.id === 'RUC');
+  if (!ruckman || isDown(ruckman) || dist(ruckman.x, ruckman.z, x, z) > 38) {
+    const near = byDistance(ps, x, z, (p) => !isDown(p) && p.ai.role !== 'fetch');
+    ruckman = near.length ? near[0].p : ruckman;
+  }
+  return ruckman;
+}
+
 function ruckRoles(m, team) {
   const ps = team.players;
   const R = m.ruck;
-  let ruckman = ps.find((p) => p.pos.id === 'RUC');
-  if (!ruckman || isDown(ruckman) || dist(ruckman.x, ruckman.z, R.x, R.z) > 38) {
-    const near = byDistance(ps, R.x, R.z, (p) => !isDown(p) && p.ai.role !== 'fetch');
-    ruckman = near.length ? near[0].p : ruckman;
-  }
+  const ruckman = pickRuckman(team, R.x, R.z);
   if (ruckman) ruckman.ai.role = 'ruck';
   const ring = byDistance(ps, R.x, R.z, (p) => p !== ruckman && p.ai.role === 'form' && p.pos.line !== 'B' && p.pos.line !== 'F');
   for (let i = 0; i < Math.min(3, ring.length); i++) {
@@ -114,6 +124,34 @@ function assignRoles(m, team) {
         b.intended.ai.role = 'contest';
         n = 1;
       }
+      if (b.kind === 'kick' && b.lastTeam !== team.idx) {
+        // We're defending: the receiver's man goes to spoil, with a team-mate coming to help
+        const react = tune(m, team.players[0]).react;
+        if (b.age >= react) {
+          const attackers = m.teams[b.lastTeam].players;
+          let recv = b.intended && !isDown(b.intended) ? b.intended : null;
+          if (!recv) {
+            let bd = 99;
+            for (const a of attackers) {
+              if (isDown(a) || a === b.kicker) continue;
+              const d = dist(a.x, a.z, L.x, L.z);
+              if (d < bd) {
+                bd = d;
+                recv = a;
+              }
+            }
+          }
+          let spoiler = recv && recv.opp && recv.opp.team === team && !isDown(recv.opp) && dist(recv.opp.x, recv.opp.z, L.x, L.z) < 26 ? recv.opp : null;
+          if (!spoiler) {
+            const first = near.find((c) => c.d < 30);
+            spoiler = first ? first.p : null;
+          }
+          if (spoiler) spoiler.ai.role = 'spoil';
+          const help = near.find((c) => c.p !== spoiler && c.d < 22 && c.p.pos.line !== 'F');
+          if (help) help.p.ai.role = 'spoil2';
+        }
+        return;
+      }
       for (const { p, d } of near) {
         if (p.ai.role === 'contest') continue;
         const canReach = (d - 1.2) / (p.maxSpd * 1.2) <= L.t + 0.4;
@@ -174,7 +212,14 @@ function computeTarget(m, p, dt) {
       break;
     case 'form': {
       [tx, tz] = formTarget(m, p);
-      if (dist(p.x, p.z, tx, tz) > 14) ai.pace = 1;
+      const gap = dist(p.x, p.z, tx, tz);
+      if (gap > 14) ai.pace = 1;
+      // a man-marker has to stay with his man when he leads, not drift off the pace
+      const o = p.opp;
+      if (o && m.possTeam !== p.team.idx && (p.pos.line === 'B' || p.pos.line === 'HB') && Math.hypot(o.vx, o.vz) > 3.5) {
+        ai.pace = 1;
+        ai.sprint = gap > 1.5;
+      }
       ai.leadT = 0;
       break;
     }
@@ -278,6 +323,24 @@ function computeTarget(m, p, dt) {
       if (L) {
         tx = L.x;
         tz = L.z;
+        ai.sprint = true;
+        ai.pace = 1;
+      }
+      break;
+    }
+    case 'spoil':
+    case 'spoil2': {
+      const L = b.land;
+      if (L) {
+        // get on the kicker's side of the landing spot - in front of the receiver
+        let kx = b.fromX - L.x;
+        let kz = b.fromZ - L.z;
+        const kl = Math.hypot(kx, kz) || 1;
+        kx /= kl;
+        kz /= kl;
+        const front = ai.role === 'spoil' ? 0.55 : -1.6;
+        tx = L.x + kx * front + (ai.role === 'spoil2' ? -kz * 1.2 : 0);
+        tz = L.z + kz * front + (ai.role === 'spoil2' ? kx * 1.2 : 0);
         ai.sprint = true;
         ai.pace = 1;
       }
@@ -503,12 +566,22 @@ function act(m, p, dt) {
 
   // Leaping for marks and ruck contests.
   if (!p.action && b.state === 'free') {
-    if (ai.role === 'contest' && b.kind === 'kick' && ai.jumpFor !== b.id && b.land && b.land.t < 0.3 && dist(p.x, p.z, b.land.x, b.land.z) < 2.6) {
+    const spoiling = ai.role === 'spoil' || ai.role === 'spoil2';
+    if ((ai.role === 'contest' || spoiling) && b.kind === 'kick' && ai.jumpFor !== b.id && b.land && b.land.t < 0.32 && dist(p.x, p.z, b.land.x, b.land.z) < (spoiling ? 3.2 : 2.6)) {
       ai.jumpFor = b.id; // decide once per kick: fly for it, or stay down for a chest mark
-      if (m.rng() < 0.55) m.startJump(p);
+      const chance = ai.role === 'spoil' ? tune(m, p).spoilChance : spoiling ? tune(m, p).spoilChance * 0.7 : 0.55;
+      if (m.rng() < chance) m.startJump(p);
     }
-    if (ai.role === 'ruck' && b.kind === 'toss' && b.vy < 0 && b.y < 6.2 && dist(p.x, p.z, b.x, b.z) < 3) {
-      m.startJump(p);
+    if (ai.role === 'ruck' && b.kind === 'toss' && b.land) {
+      // plan the jump once per contest; a better ruckman gets his timing closer to perfect
+      if (ai.ruckPlan !== b.id) {
+        ai.ruckPlan = b.id;
+        ai.ruckJumpAt = m.time + Math.max(0, b.land.t - 0.36 + gauss(m.rng) * tune(m, p).ruckSigma);
+      }
+      if (ai.ruckDone !== b.id && m.time >= ai.ruckJumpAt) {
+        ai.ruckDone = b.id;
+        m.startJump(p);
+      }
     }
   }
 }

@@ -3,14 +3,17 @@
 //   mode "demo"  - AI v AI (default)
 //   mode "bot"   - a scripted "human" on team 0, to exercise the control code
 import { Match } from '../src/sim/match.js';
-import { TEAMS, F } from '../src/config.js';
+import { TEAMS, F, DIFFICULTY } from '../src/config.js';
 import { makeRng } from '../src/util.js';
 
 const N = Number(process.argv[2] || 6);
 const MODE = process.argv[3] || 'demo';
 const DT = 1 / 60;
 const DIFF = process.argv[4] || 'medium';
+// quick tuning experiments: DIFF_OVERRIDE='{"aiSpeed":1}' node tools/sim-test.mjs 16 bot medium
+if (process.env.DIFF_OVERRIDE) Object.assign(DIFFICULTY[DIFF], JSON.parse(process.env.DIFF_OVERRIDE));
 const SKILL = Number(process.argv[5] || 0.7); // how tidy the bot's set shots are
+const TIMING = Number(process.argv[6] || 0.22); // how far out the bot's ruck jump timing can be, in seconds
 
 /** Plays roughly like a competent person would: runs at goal, picks out team-mates, tackles and flies for marks. */
 function botInput(m, rng, st) {
@@ -92,6 +95,21 @@ function botInput(m, rng, st) {
     st.plan = null;
     st.planFor = null;
     const b = m.ball;
+    if (b.kind === 'toss' && b.state === 'free' && b.land && m.ruckC) {
+      // ruck contest: jump when the ball is about to arrive, with a human-sized timing error
+      if (st.ruckId !== b.id) {
+        st.ruckId = b.id;
+        st.ruckAt = 0.36 + (rng() + rng() - 1) * TIMING;
+        st.ruckDone = false;
+      }
+      inp.mx = dir;
+      inp.mz = 0;
+      if (!st.ruckDone && b.land.t <= st.ruckAt) {
+        st.ruckDone = true;
+        inp.kickPressed = true;
+      }
+      return inp;
+    }
     const c = b.holder;
     let fx = b.x + b.vx * 0.3;
     let fz = b.z + b.vz * 0.3;
@@ -144,10 +162,10 @@ for (let i = 0; i < N; i++) {
     m.step(DT, MODE === 'bot' ? botInput(m, rng, st) : null);
     for (const e of m.events) {
       totals.events[e.type] = (totals.events[e.type] || 0) + 1;
-      const pl = e.player || e.scorer || e.tackler;
+      const pl = e.player || e.scorer || e.tackler || e.winner;
       const team = pl ? pl.team.idx : e.team;
       if (team != null) {
-        const k = `${e.type}${e.rushed ? '(rushed)' : ''}${e.poster ? '(post)' : ''}${e.holding ? '(holding)' : ''}${e.kind && e.type === 'free' ? `(${e.kind})` : ''}`;
+        const k = `${e.type}${e.rushed ? '(rushed)' : ''}${e.poster ? '(post)' : ''}${e.holding ? '(holding)' : ''}${e.kind && e.type === 'free' ? `(${e.kind})` : ''}${e.type === 'ruck' ? (e.clean ? '(clean)' : '(spill)') : ''}`;
         const row = (totals.byTeam[k] = totals.byTeam[k] || [0, 0]);
         row[team]++;
       }

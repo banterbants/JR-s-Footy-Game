@@ -1,7 +1,7 @@
 // Game-wide constants: field geometry, positions, clubs and difficulty tuning.
 
 /** Shown on the title screen so you can tell which version a device is running. */
-export const VERSION = '1.3.0';
+export const VERSION = '1.4.0';
 
 /** Field geometry in metres. The oval's long axis runs along X, goals at both X ends. */
 export const F = {
@@ -71,10 +71,23 @@ export function teamById(id) {
   return TEAMS.find((t) => t.id === id) || TEAMS[0];
 }
 
+/**
+ * How hard each level is.
+ *  aiSpeed      - opposition run speed
+ *  react        - seconds before defenders react to a kick in the air
+ *  spoilChance  - how often a defender flies for a spoil
+ *  pressure     - how much a close defender puts you off a mark
+ *  humanReach / humanMark - small marking helps for the player (Rookie only, really)
+ *  humanSpread  - kicking accuracy for the player (higher = wilder)
+ *  kickAssist   - how much the aim-assist tightens the player's passes
+ *  aiSpread     - opposition kicking (lower = straighter)
+ *  tackleAdj / tackleDelay / priorOpp - tackling and "holding the ball"
+ *  ruckSigma / aiRuck - how well the opposition ruckman times his jump, and a bonus to their hit-outs
+ */
 export const DIFFICULTY = {
-  easy: { label: 'Rookie', aiSpeed: 0.92, tackleAdj: -0.16, tackleDelay: 0.3, decideAdj: 0.3, aiSpread: 1.45, humanMark: 0.14, humanSpread: 0.75, priorOpp: 2.6 },
-  medium: { label: 'Pro', aiSpeed: 0.98, tackleAdj: -0.04, tackleDelay: 0.16, decideAdj: 0.08, aiSpread: 1.1, humanMark: 0.06, humanSpread: 0.9, priorOpp: 1.9 },
-  hard: { label: 'Legend', aiSpeed: 1.03, tackleAdj: 0.06, tackleDelay: 0.06, decideAdj: -0.05, aiSpread: 0.88, humanMark: 0.0, humanSpread: 1.0, priorOpp: 1.4 },
+  easy: { label: 'Rookie', aiSpeed: 1.0, react: 0.5, spoilChance: 0.58, pressure: 0.8, tackleAdj: -0.06, tackleDelay: 0.18, decideAdj: 0.1, aiSpread: 1.12, humanMark: 0.04, humanReach: 0.14, humanSpread: 0.9, kickAssist: 0.85, priorOpp: 2.0, ruckSigma: 0.14, aiRuck: -0.07 },
+  medium: { label: 'Pro', aiSpeed: 1.01, react: 0.38, spoilChance: 0.72, pressure: 0.8, tackleAdj: -0.015, tackleDelay: 0.15, decideAdj: 0.03, aiSpread: 1.1, humanMark: 0.03, humanReach: 0.14, humanSpread: 0.92, kickAssist: 1.05, priorOpp: 1.85, ruckSigma: 0.09, aiRuck: -0.045 },
+  hard: { label: 'Legend', aiSpeed: 1.015, react: 0.26, spoilChance: 0.9, pressure: 0.88, tackleAdj: 0.01, tackleDelay: 0.11, decideAdj: 0.01, aiSpread: 1.085, humanMark: 0.02, humanReach: 0.115, humanSpread: 0.93, kickAssist: 1.06, priorOpp: 1.6, ruckSigma: 0.05, aiRuck: -0.015 },
 };
 
 export const SURNAMES = [
