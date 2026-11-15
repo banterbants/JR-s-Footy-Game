@@ -105,14 +105,17 @@ h3 { margin: 0 0 8px; font-size: 20px; color: var(--teal); text-transform: upper
 .pick-name { font-size: clamp(20px, 4.4vh, 32px); font-weight: 800; font-style: italic; text-transform: uppercase; line-height: 1; min-height: 2em; display: flex; align-items: center; justify-content: center; }
 .pick-rating { color: var(--muted); font-size: 15px; letter-spacing: 0.08em; margin-top: 2px; }
 
-.options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 18px; margin-top: clamp(8px, 2vh, 18px); }
+.options { display: grid; grid-template-columns: 1fr 1.45fr 1fr; gap: 10px 18px; margin-top: clamp(8px, 2vh, 18px); }
 .options.col { grid-template-columns: 1fr; }
 .opt { display: flex; flex-direction: column; gap: 4px; }
 .options.col .opt { flex-direction: row; align-items: center; justify-content: space-between; gap: 14px; }
 .opt label { color: var(--muted); font-size: 15px; letter-spacing: 0.14em; text-transform: uppercase; }
 .seg { display: flex; border: 2px solid rgba(255, 255, 255, 0.14); }
-.seg button { flex: 1; padding: 6px 10px; font-weight: 700; font-size: 17px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: var(--muted); background: rgba(255, 255, 255, 0.04); }
+.seg button { flex: 1; padding: 6px 7px; font-weight: 700; font-size: 17px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; color: var(--muted); background: rgba(255, 255, 255, 0.04); }
 .seg button.on { background: var(--gold); color: #141414; }
+/* the fourth difficulty is meant to look dangerous */
+.seg button[data-val=extreme] { color: #ff8a8d; }
+.seg button[data-val=extreme].on { background: var(--red); color: #fff; box-shadow: 0 0 14px rgba(229, 56, 59, 0.55); }
 input[type="range"] { width: min(240px, 50vw); accent-color: var(--gold); height: 28px; touch-action: none; }
 
 /* how to play */
@@ -245,7 +248,9 @@ kbd { display: inline-block; padding: 0 6px; border: 1px solid rgba(255, 255, 25
 #keys b { color: var(--gold); }
 
 /* --------------------------------------------------------- touch controls */
-#touch { position: fixed; inset: 0; z-index: 12; pointer-events: none; }
+#touch { position: fixed; inset: 0; z-index: 12; pointer-events: none; transition: opacity 0.3s; }
+#touch.away { opacity: 0; }
+#touch.away * { pointer-events: none !important; }
 #stickZone { position: absolute; left: 0; top: 18%; bottom: 0; width: 48%; pointer-events: auto; touch-action: none; }
 #stickBase {
   position: absolute; left: calc(26px + var(--sal)); bottom: calc(26px + var(--sab)); width: 124px; height: 124px; margin: 0; border-radius: 50%;
@@ -308,7 +313,16 @@ body.touch #setshot { bottom: calc(18px + var(--sab)); width: min(400px, 44vw); 
   .title-wrap { margin-left: 0; align-items: center; }
   .title-brand { align-items: center; }
   .logo { height: auto; width: min(78vw, 420px); }
-  .versus { gap: 4px; }
+  .versus { gap: 2px; }
+  .pick { min-width: 0; }
+  .pick-row { gap: 3px; }
+  .pick-label { letter-spacing: 0.14em; font-size: 13px; }
+  .arrow { width: 32px; height: 32px; font-size: 13px; flex: none; }
+  .kit { height: clamp(70px, 14vh, 110px); }
+  .crest { right: -22%; }
+  .pick-name { font-size: 19px; }
+  .pick-rating { font-size: 13px; }
+  .vs { font-size: 26px; }
   .options { grid-template-columns: 1fr; }
   .howto-grid, .two-col { grid-template-columns: 1fr; }
   .row { justify-content: center; }

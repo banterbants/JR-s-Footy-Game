@@ -12,8 +12,9 @@ export class Input {
     this.pad = { sx: 0, sy: 0, a: false, b: false, sprint: false, pause: false };
     this.edge = { a: false, b: false, pause: false, start: false };
     this.prev = { a: false, b: false, pause: false };
-    this.isTouch = false;
-    this.usedPad = false;
+    // Whatever the player touched most recently: 'touch', 'pad' (controller) or 'keys' (keyboard).
+    // The HUD follows it, so the on-screen controls fade away when a controller or keyboard takes over.
+    this.mode = 'keys';
     this.navState = { dir: null, next: 0 };
     this.onModeChange = null;
     this.enabled = true;
@@ -25,7 +26,7 @@ export class Input {
       const typing = t && (t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && t.type !== 'range'));
       if (typing) return;
       if (k !== 'pause' && e.code !== 'Enter') e.preventDefault();
-      if (k === 'up' || k === 'down' || k === 'left' || k === 'right') this.noteKeyboard();
+      if (!e.repeat || this.mode === 'touch') this.noteKeyboard();
       if (e.code === 'Enter' && e.target && e.target.tagName === 'BUTTON') return;
       if (!this.keys[k] && !e.repeat) {
         if (k === 'a' || k === 'b' || k === 'pause') this.edge[k] = true;
@@ -127,18 +128,33 @@ export class Input {
     bindBtn(root.querySelector('#btnS'), 'sprint');
   }
 
+  get isTouch() {
+    return this.mode === 'touch';
+  }
+
+  get usedPad() {
+    return this.mode === 'pad';
+  }
+
+  setMode(mode) {
+    if (this.mode === mode) return;
+    this.mode = mode;
+    if (this.onModeChange) this.onModeChange(mode);
+  }
+
   noteTouch() {
-    if (!this.isTouch) {
-      this.isTouch = true;
-      if (this.onModeChange) this.onModeChange();
-    }
+    this.setMode('touch');
   }
 
   noteKeyboard() {
-    if (this.isTouch) {
-      this.isTouch = false;
-      if (this.onModeChange) this.onModeChange();
-    }
+    this.setMode('keys');
+  }
+
+  noteGamepad() {
+    // a thumb on the screen wins: a drifting stick must never snatch the controls away mid-play
+    const t = this.touch;
+    if (t.stickId !== null || t.a || t.b || t.sprint) return;
+    this.setMode('pad');
   }
 
   pollPad() {
@@ -146,6 +162,7 @@ export class Input {
     p.sx = p.sy = 0;
     p.a = p.b = p.sprint = p.pause = false;
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    let active = false;
     for (const g of pads) {
       if (!g || !g.connected) continue;
       const ax = g.axes[0] || 0;
@@ -163,8 +180,10 @@ export class Input {
       p.b = p.b || bt(1) || bt(2);
       p.sprint = p.sprint || bt(7) || bt(5) || bt(6) || bt(4);
       p.pause = p.pause || bt(9);
-      if (p.a || p.b || p.sx || p.sy) this.usedPad = true;
+      // any button, or a firm push of the stick, counts as "the controller is in use"
+      if (g.buttons.some((b) => b && b.pressed) || Math.hypot(ax, ay) > 0.5) active = true;
     }
+    if (active) this.noteGamepad();
     if (p.pause && !this.prev.pause) this.edge.start = true;
     for (const k of ['a', 'b', 'pause']) {
       if (p[k] && !this.prev[k]) this.edge[k] = true;

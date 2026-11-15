@@ -11,7 +11,7 @@ const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
 const OPTIONS = {
   quarterLen: [[120, '2 min'], [180, '3 min'], [300, '5 min']],
-  difficulty: [['easy', 'Rookie'], ['medium', 'Pro'], ['hard', 'Legend']],
+  difficulty: [['easy', 'Rookie'], ['medium', 'Pro'], ['hard', 'Legend'], ['extreme', 'Immortal']],
   timeOfDay: [['day', 'Day'], ['dusk', 'Twilight'], ['night', 'Night']],
   quality: [['auto', 'Auto'], ['low', 'Low'], ['medium', 'Med'], ['high', 'High']],
   shake: [['on', 'On'], ['off', 'Off']],
@@ -175,7 +175,7 @@ export class UI {
     if (this.navActive) this.setPadFocus(first);
     else {
       this.setPadFocus(null);
-      if (first && !this.game.input.isTouch) first.focus({ preventScroll: true });
+      if (first && this.game.input.mode !== 'touch') first.focus({ preventScroll: true });
     }
   }
 
@@ -512,11 +512,16 @@ export class UI {
 
   // -------------------------------------------------------------------- HUD
 
-  setHud(on, touch) {
+  /** `mode` is the control scheme in use: 'touch', 'pad' or 'keys'. */
+  setHud(on, mode = 'keys') {
+    const touch = mode === 'touch';
     this.el.hud.classList.toggle('hidden', !on);
-    this.el.touch.classList.toggle('hidden', !(on && touch));
+    this.el.touch.classList.toggle('hidden', !on);
+    // the on-screen controls fade away when a controller or keyboard is being used
+    this.el.touch.classList.toggle('away', on && !touch);
     document.body.classList.toggle('in-match', on);
-    document.body.classList.toggle('touch', !!touch);
+    document.body.classList.toggle('touch', touch);
+    this.setKeysLegend(mode === 'pad' ? 'pad' : 'keys');
     if (!on) {
       this.el.banner.className = '';
       this.el.ticker.classList.remove('show');

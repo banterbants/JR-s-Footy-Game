@@ -47,10 +47,10 @@ class Game {
     this.userActed = false;
 
     this.input.bindTouch(document.getElementById('touch'));
-    this.input.isTouch = isMobile();
+    this.input.mode = isMobile() ? 'touch' : 'keys';
     // swap between on-screen controls and the key legend to suit whatever is being used
-    this.input.onModeChange = () => {
-      if (this.state === 'playing' || this.state === 'paused' || this.state === 'break') this.ui.setHud(true, this.input.isTouch);
+    this.input.onModeChange = (mode) => {
+      if (this.state === 'playing' || this.state === 'paused' || this.state === 'break') this.ui.setHud(true, mode);
     };
     addEventListener('touchstart', () => this.input.noteTouch(), { passive: true });
     this.createRenderer();
@@ -201,8 +201,7 @@ class Game {
       this.renderer.cut();
       this.ui.hideScreens();
       this.ui.initMatch(this.match, this.renderer.kits);
-      this.ui.setHud(true, this.input.isTouch);
-      this.ui.setKeysLegend(this.input.usedPad ? 'pad' : 'keys');
+      this.ui.setHud(true, this.input.mode);
       this.input.clear();
       this.match.events.length = 0;
       this.state = 'playing';
@@ -222,7 +221,7 @@ class Game {
   }
 
   goFullscreen() {
-    if (!this.input.isTouch || isStandalone()) return;
+    if (this.input.mode !== 'touch' || isStandalone()) return;
     const el = document.documentElement;
     try {
       const p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : null;
@@ -371,8 +370,8 @@ class Game {
   // ----------------------------------------------------------------- events
 
   keyName(k) {
-    if (this.input.isTouch) return { a: 'KICK', b: 'HANDBALL', s: 'SPRINT', tackle: 'TACKLE', mark: 'MARK', sw: 'SWITCH', jump: 'JUMP' }[k];
-    if (this.input.usedPad) return { a: 'A', b: 'B', s: 'RT', tackle: 'A', mark: 'A', sw: 'B', jump: 'A' }[k];
+    if (this.input.mode === 'touch') return { a: 'KICK', b: 'HANDBALL', s: 'SPRINT', tackle: 'TACKLE', mark: 'MARK', sw: 'SWITCH', jump: 'JUMP' }[k];
+    if (this.input.mode === 'pad') return { a: 'A', b: 'B', s: 'RT', tackle: 'A', mark: 'A', sw: 'B', jump: 'A' }[k];
     return { a: 'SPACE', b: 'E', s: 'SHIFT', tackle: 'SPACE', mark: 'SPACE', sw: 'E', jump: 'SPACE' }[k];
   }
 
@@ -575,11 +574,11 @@ class Game {
     const c = m.control;
     if (this.hintT > 0) this.hintT -= dt;
     let prompt = '';
-    const touch = this.input.isTouch;
+    const touch = this.input.mode === 'touch';
     const b0 = m.ball;
     const ruckSetup = c && !c.hasBall && (m.phase === 'bounce' || (m.phase === 'stoppage' && m.pending && (m.pending.kind === 'ballup' || m.pending.kind === 'throwin')));
     if (ruckSetup) {
-      prompt = `You&rsquo;re in the ruck &ndash; get ready to <b>${this.keyName('jump')}</b> as the ring closes`;
+      prompt = `You&rsquo;re in the ruck &ndash; press <b>${this.keyName('jump')}</b> to jump as the ring closes`;
     } else if (c && m.ruckC && b0.kind === 'toss' && b0.state === 'free') {
       prompt = `<b>RUCK!</b> Press <b>${this.keyName('jump')}</b> as the ring closes &nbsp;&middot;&nbsp; aim the stick to pick who gets it`;
     } else if (m.phase === 'free' && m.free && m.free.player === c && c) {

@@ -34,7 +34,7 @@ function trial(diff, off, seed) {
   return null;
 }
 
-const diffs = ['easy', 'medium', 'hard'];
+const diffs = ['easy', 'medium', 'hard', 'extreme'];
 const head = 'offset(s) ' + diffs.map((d) => d.padEnd(22)).join('');
 console.log('Human ruckman wins the hit-out (%) / clean taps (%)   [offset: - = pressed early, + = pressed late]');
 console.log(head);

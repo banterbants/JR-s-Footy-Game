@@ -6,6 +6,6 @@
   "type": "module",
   "scripts": {
     "start": "node tools/serve.mjs",
-    "test": "node tools/sim-test.mjs 8 demo && node tools/sim-test.mjs 8 bot easy && node tools/sim-test.mjs 8 bot medium && node tools/sim-test.mjs 8 bot hard"
+    "test": "node tools/sim-test.mjs 8 demo && node tools/sim-test.mjs 8 bot easy && node tools/sim-test.mjs 8 bot medium && node tools/sim-test.mjs 8 bot hard && node tools/sim-test.mjs 8 bot extreme"
   }
 }

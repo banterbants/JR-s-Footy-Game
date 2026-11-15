@@ -5,8 +5,8 @@ import { clamp, lerp, makeRng, hashStr, angDiff, fieldValue, clampToField, dist,
 import { updateAI, formationSpot, pickRuckman } from './ai.js';
 
 const BALL_R = 0.16;
-const CATCH_R = 1.35; // how far a standing player can reach for the ball
-const JUMP_R = 1.9;
+const CATCH_R = 1.28; // how far a standing player can reach for the ball
+const JUMP_R = 1.8;
 const STAND_H = 2.45;
 const JUMP_H = 3.5;
 const PICKUP_R = 1.15;
@@ -1003,6 +1003,14 @@ export class Match {
     }
   }
 
+  /** Harder levels make the player's marks harder to hold and the opposition's a little easier. */
+  markSkew(p) {
+    if (this.humanTeam < 0) return 0;
+    if (p === this.control) return -this.diff.markPenalty;
+    if (!this.isHumanTeam(p)) return this.diff.markPenalty * 0.5;
+    return 0;
+  }
+
   /** How hard the opposition are leaning on a player, 0 (alone) to about 1.3 (smothered). */
   markPressure(p) {
     let value = 0;
@@ -1067,8 +1075,9 @@ export class Match {
         // to hold, and a long, fast ball is harder to pluck.
         const press = this.markPressure(w.p);
         const kd = dist(b.fromX, b.fromZ, w.p.x, w.p.z);
-        let pm = 0.66 + 0.26 * w.p.attr.mark + (w.jumping ? 0.03 : 0) - clamp((kd - 38) / 90, 0, 0.1);
+        let pm = 0.62 + 0.26 * w.p.attr.mark + (w.jumping ? 0.03 : 0) - clamp((kd - 38) / 90, 0, 0.1);
         if (w.p === this.control) pm += this.diff.humanMark;
+        pm += this.markSkew(w.p);
         pm -= press.value * 0.34 * (this.humanTeam >= 0 && this.isHumanTeam(w.p) ? this.diff.pressure : 1);
         pm = clamp(pm, 0.18, 0.97);
         if (this.rng() < pm) this.takeMark(w.p, { contested: press.value > 0.35, specky: false });
@@ -1076,7 +1085,7 @@ export class Match {
         else this.fumble(w.p);
       } else {
         const margin = w.s - rivals[0].s;
-        const pm = clamp(0.42 + margin * 1.1, 0.2, 0.88);
+        const pm = clamp(0.42 + margin * 1.1 + this.markSkew(w.p) * 0.8, 0.2, 0.88);
         if (this.rng() < pm) this.takeMark(w.p, { contested: true, specky: w.jumping && rivals[0].dh < 1.6 });
         else this.spoil(rivals[0].p);
       }

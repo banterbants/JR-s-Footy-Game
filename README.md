@@ -14,7 +14,7 @@ Take marks, snap goals, line up set shots, lay tackles and fly for screamers in 
 - **Pick-up-and-play controls** – one stick and three buttons. Aim assist picks out team-mates and the goals, a ring shows where the ball will land, and the AI helps your player along when you let go of the stick.
 - **3D stadium** – day, twilight and night matches, real-time shadows, packed grandstands that leap up for goals, live scoreboards, confetti, cinematic set-shot and goal cameras.
 - **Sound** – a crowd that rises and falls with the play, umpire's whistle, the siren, leather on boot, post "doinks" and a brass-band menu tune (all synthesised, no downloads).
-- **Game modes** – Quick Match, plus a home-and-away **Season** with a ladder, bye weeks and a Grand Final. Three difficulty levels and 2, 3 or 5 minute quarters.
+- **Game modes** – Quick Match, plus a home-and-away **Season** with a ladder, bye weeks and a Grand Final. Four difficulty levels (Rookie, Pro, Legend and the brutal **Immortal**) and 2, 3 or 5 minute quarters.
 - **Works everywhere** – keyboard, touch screen or gamepad. Installable, full-screen and playable offline.
 
 The clubs and league (the *Southern Cross League*) are original creations — this is an independent game and isn't affiliated with any real league or club.
@@ -44,6 +44,7 @@ Once installed it opens full screen, in landscape, and works without an internet
 | Menus | Arrow keys, `Space` to select, `Esc` to go back | Tap | D-pad or stick, `A` to select, `B` to go back, `Start` for the main button |
 
 - **Kicking:** hold *Kick* to power up, aim with the stick, release. A light tap is a short pass; full power is a long bomb or a shot at goal. The blue ring shows which team-mate you'll hit.
+- **Switching controls:** the on-screen touch controls fade away as soon as you use a controller or keyboard, and come back the moment you touch the screen. The hints and button labels follow whatever you used last.
 - **Marking:** run to the white ring where the ball will land and press *Mark* to fly for it. Catch a kick of 15 m or more and you get a free kick.
 - **Set shots:** mark within range and press *Kick* to line up — then stop the needle in the green.
 - **Ruck contests:** at a bounce or ball-up your ruckman steps up. Press *Kick* (shown as *Jump* on touch) just as the white ring closes onto the gold ring, and aim with the stick to pick who gets the tap. Too early, too late or not at all, and the other ruckman wins it.
